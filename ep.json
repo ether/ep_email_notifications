@@ -1,7 +1,7 @@
 {
   "parts":[
     {
-      "name": "email_notifications",
+      "name": "ep_email_notifications",
       "hooks": {
         "padUpdate": "ep_email_notifications/update"
       },
