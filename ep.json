@@ -9,6 +9,7 @@
         "eejsBlock_editbarMenuRight": "ep_email_notifications/client:eejsBlock_toolbarRight"
       },
       "client_hooks": {
+        "postAceInit":"ep_email_notifications/static/js/ep_email"
       }
     }
   ]
