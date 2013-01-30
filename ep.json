@@ -3,7 +3,10 @@
     {
       "name": "ep_email_notifications",
       "hooks": {
-        "padUpdate": "ep_email_notifications/update"
+        "padUpdate": "ep_email_notifications/update",
+        "handleMessage": "ep_email_notifications/update",
+        "eejsBlock_scripts": "ep_email_notifications/client",
+        "eejsBlock_editbarMenuRight": "ep_email_notifications/client:eejsBlock_toolbarRight"
       },
       "client_hooks": {
       }

@@ -11,9 +11,22 @@ var timers = {};
 // When a new message comes in from the client
 exports.handleMessage = function(hook_name, context, callback){
   console.warn(context);
-  if ( context.message.type == 'USERINFO_UPDATE' ) {
-    console.warn ("LORDAMERCI!");
+  if (context.message && context.message.data){
+    if (context.message.data.type == 'USERINFO_UPDATE' ) { // if it smells okay..
+      if (context.message.data.userInfo){
+        if(context.message.data.userInfo.email){ // it contains email
+
+          exports.setAuthorEmail(
+            context.message.data.userInfo.userId, 
+            context.message.data.userInfo.email, callback);
+
+          console.warn ("WRITE MY GOODNESS TO THE DATABASE!",context.message.data.userInfo.email);
+        }
+      }
+      console.warn ("LORDAMERCI!");
+    }
   }
+  callback();
 }
 
 exports.padUpdate = function (hook_name, _pad) {
