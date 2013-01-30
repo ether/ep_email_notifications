@@ -1,4 +1,4 @@
- var  db = require('../../src/node/db/DB').db;
+ var  db = require('../../src/node/db/DB').db,
      API = require('../../src/node/db/API.js'),
    async = require('../../src/node_modules/async'),
 settings = require('../../src/node/utils/Settings');
@@ -10,23 +10,67 @@ var timers = {};
 
 // When a new message comes in from the client
 exports.handleMessage = function(hook_name, context, callback){
-  console.warn(context);
   if (context.message && context.message.data){
-    if (context.message.data.type == 'USERINFO_UPDATE' ) { // if it smells okay..
+    if (context.message.data.type == 'USERINFO_UPDATE' ) { // if it's a request to update an authors email
       if (context.message.data.userInfo){
-console.warn("foo",context.message.data.userInfo);
+        console.debug("userInfo",context.message.data.userInfo);
         if(context.message.data.userInfo.email){ // it contains email
-          exports.setAuthorEmail(
-            context.message.data.userInfo.userId, 
-            context.message.data.userInfo.email, callback);
+          // console.warn(context.message.data.userInfo.userId);
 
-          console.warn ("WRITE MY GOODNESS TO THE DATABASE!",context.message.data.userInfo.email);
+          console.debug(context.message);
+
+          db.get("emailSubscription:"+context.message.data.padId, function(err, userIds){ // does email Subscription already exist for this user?
+
+            console.debug("UserIds subscribed by email to this pad:", userIds);
+
+            if(userIds){ //  THIS NEEDS TO BE AN OBJECT :: TODO
+              // This user ID is already assigned to this padId so don't do anything except tell the user they are already subscribed somehow..
+
+              context.client.json.send({ type: "COLLABROOM",
+                data:{
+                  type: email_subscription_success,
+                  payload: false
+                }
+              });
+
+            }else{
+
+              // console.warn ("WRITE MY GOODNESS TO THE DATABASE!",context.message.data.userInfo.email);
+
+              exports.setAuthorEmail(
+                context.message.data.userInfo.userId, 
+                context.message.data.userInfo.email, callback
+              );
+
+              exports.setAuthorEmailRegistered(
+                context.message.data.userInfo.userId,
+                context.message.data.padId, callback
+              );
+ 
+              context.client.json.send({ type: "COLLABROOM",
+                data:{
+                  type: email_subscription_success,
+                  payload: true
+                }
+              });
+
+            }
+          });
+
+          callback(null); // don't run onto passing colorId or anything else to the message handler
+
         }
       }
-      console.warn ("LORDAMERCI!");
     }
   }
   callback();
+}
+
+exports.doesPadIdEmailAssociationAlreadyExist = function (padId, email){
+  var found = false;
+  db.get("emailSubscription:"+padId, function(err, value){
+    return value;
+  });
 }
 
 exports.padUpdate = function (hook_name, _pad) {
@@ -122,8 +166,11 @@ exports.createInterval = function(padId){
 }
 
 // Updates the database with the email record
-exports.setAuthorEmail = function (author, email, callback)
-{
+exports.setAuthorEmail = function (author, email, callback){
   db.setSub("globalAuthor:" + author, ["email"], email, callback);
 }
 
+// Write email and padId to the database
+exports.setAuthorEmailRegistered = function(author, padId, callback){
+  db.set("emailSubscription:" + padId, author);
+}
