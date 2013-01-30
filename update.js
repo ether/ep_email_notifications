@@ -1,4 +1,4 @@
- var  db = require('../../src/node/db/DB.js');
+ var  db = require('../../src/node/db/DB').db;
      API = require('../../src/node/db/API.js'),
    async = require('../../src/node_modules/async'),
 settings = require('../../src/node/utils/Settings');
@@ -14,8 +14,8 @@ exports.handleMessage = function(hook_name, context, callback){
   if (context.message && context.message.data){
     if (context.message.data.type == 'USERINFO_UPDATE' ) { // if it smells okay..
       if (context.message.data.userInfo){
+console.warn("foo",context.message.data.userInfo);
         if(context.message.data.userInfo.email){ // it contains email
-
           exports.setAuthorEmail(
             context.message.data.userInfo.userId, 
             context.message.data.userInfo.email, callback);
