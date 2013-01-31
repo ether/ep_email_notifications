@@ -8,17 +8,15 @@
 settings = require('../../src/node/utils/Settings');
 
 var pluginSettings = settings.ep_email_notifications;
-var checkInterval = 3000; // How frequently to check for pad updates -- Move me to the settings file
-var staleTime = 3000; // How stale does a pad need to be before notifying subscribers?  Move me to settings
+var checkInterval = 3000; // How frequently(milliseconds) to check for pad updates -- Move me to the settings file
+var staleTime = 30000; // How stale(milliseconds) does a pad need to be before notifying subscribers?  Move me to settings
 var timers = {};
-var fromName = "John McLear";
-var fromEmail = "john@mclear.co.uk";
+var fromName = "Etherpad";
+var fromEmail = "pad@etherpad.org";
 var urlToPads = "http://beta.etherpad.org/p/";
 
 var server  = email.server.connect({
-   user:    "username", 
-   password:"password", 
-   host:    "smtp.gmail.com", 
+   host:    "127.0.0.1", 
 });
 
 exports.padUpdate = function (hook_name, _pad) {
