@@ -1,6 +1,12 @@
-exports.postAceInit = function(){
+exports.handleClientMessage_emailSubscriptionSuccess = function(hook, context){ // was subscribing to the email a big win or fail?
+  if(context.payload == false){
+    showAlreadyRegistered();
+  }else{
+    showRegistrationSuccess();
+  }
+}
 
-  
+exports.postAceInit = function(){
   // after 10 seconds if we dont already have an email for this author then prompt them
   setTimeout(function(){init()},10000);
 }
@@ -11,6 +17,15 @@ function init(){
   }else{
     askClientToEnterEmail(); // ask the client to register
   }
+}
+
+function showRegistrationSuccess(){ // show a successful registration message
+  $.gritter.add({
+    // (string | mandatory) the heading of the notification
+    title: "Email subscribed",
+    // (string | mandatory) the text inside the notification
+    text: "You will recieve email when someone changes this pad.  If this is the first time you have requested emails you may need to confirm your email address"
+  });
 }
 
 function showAlreadyRegistered(){ // the client already registered for emails on this pad so notify the UI
@@ -35,8 +50,6 @@ function clientHasAlreadyRegistered(){ // Has the client already registered for 
   message.userInfo = {};
   message.userInfo.userId = userId;
   pad.collabClient.sendMessage(message);
-
-
 }
 
 function askClientToEnterEmail(){
@@ -53,13 +66,6 @@ function askClientToEnterEmail(){
     after_open: function(e){
       $('#ep_email_form').submit(function(){
         $(e).hide();
-
-        $.gritter.add({
-          // (string | mandatory) the heading of the notification
-          title: "Email subscribed",
-          // (string | mandatory) the text inside the notification
-          text: "You will recieve email when someone changes this.    If this is the first time you have requested emails you will need to confirm your email address"
-        });
         sendEmailToServer();
         return false;
       });

@@ -13,49 +13,60 @@ exports.handleMessage = function(hook_name, context, callback){
   if (context.message && context.message.data){
     if (context.message.data.type == 'USERINFO_UPDATE' ) { // if it's a request to update an authors email
       if (context.message.data.userInfo){
-        console.debug("userInfo",context.message.data.userInfo);
         if(context.message.data.userInfo.email){ // it contains email
-          // console.warn(context.message.data.userInfo.userId);
-
           console.debug(context.message);
 
-          db.get("emailSubscription:"+context.message.data.padId, function(err, userIds){ // does email Subscription already exist for this user?
+          // does email Subscription already exist for this email address?
+          db.get("emailSubscription:"+context.message.data.padId, function(err, userIds){
 
-            console.debug("UserIds subscribed by email to this pad:", userIds);
-
-            if(userIds){ //  THIS NEEDS TO BE AN OBJECT :: TODO
-              // This user ID is already assigned to this padId so don't do anything except tell the user they are already subscribed somehow..
-
-              context.client.json.send({ type: "COLLABROOM",
-                data:{
-                  type: email_subscription_success,
-                  payload: false
+            var alreadyExists = false;
+            if(userIds){
+              async.forEach(Object.keys(userIds), function(user, cb){ 
+                console.debug("UserIds subscribed by email to this pad:", userIds);
+                  if(user == context.message.data.userInfo.email){ //  If we already have this email registered for this pad
+  
+                  // This user ID is already assigned to this padId so don't do anything except tell the user they are already subscribed somehow..
+                  alreadyExists = true;
+                  console.debug("email ", user, "already subscribed to ", context.message.data.padId, " so sending message to client");
+  
+                  context.client.json.send({ type: "COLLABROOM",
+                    data:{
+                      type: "emailSubscriptionSuccess",
+                      payload: false
+                    }
+                  });
                 }
-              });
+                cb();
+              },
+  
+              function(err){
+                // There should be something in here!
+              }); // end async for each
+            }
 
-            }else{
-
-              // console.warn ("WRITE MY GOODNESS TO THE DATABASE!",context.message.data.userInfo.email);
-
+            if(alreadyExists == false){
+ 
+              console.warn ("Wrote to the database and sent client a positive response ",context.message.data.userInfo.email);
+  
               exports.setAuthorEmail(
                 context.message.data.userInfo.userId, 
                 context.message.data.userInfo.email, callback
               );
-
-              exports.setAuthorEmailRegistered(
-                context.message.data.userInfo.userId,
-                context.message.data.padId, callback
-              );
  
+              exports.setAuthorEmailRegistered(
+                context.message.data.userInfo.email,
+                context.message.data.userInfo.userId,
+                context.message.data.padId
+              );
+   
               context.client.json.send({ type: "COLLABROOM",
                 data:{
-                  type: email_subscription_success,
+                  type: "email_subscription_success",
                   payload: true
-                }
+                 }
               });
-
             }
-          });
+          }); // close db get
 
           callback(null); // don't run onto passing colorId or anything else to the message handler
 
@@ -171,6 +182,19 @@ exports.setAuthorEmail = function (author, email, callback){
 }
 
 // Write email and padId to the database
-exports.setAuthorEmailRegistered = function(author, padId, callback){
-  db.set("emailSubscription:" + padId, author);
+exports.setAuthorEmailRegistered = function(email, authorId, padId){
+  var timestamp = new Date().getTime();
+  var registered = {
+      authorId: authorId,
+      timestamp: timestamp
+  };
+  console.debug("registered", registered, " to ", padId);
+
+  // Here we have to basically hack a new value into the database, this isn't clean or polite.
+  db.get("emailSubscription:" + padId, function(err, value){ // get the current value
+    if(!value){value = {};} // if an emailSubscription doesnt exist yet for this padId don't panic
+    value[email] = registered; // add the registered values to the object
+    db.set("emailSubscription:" + padId, value); // stick it in the database
+  });
+
 }
