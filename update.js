@@ -1,6 +1,7 @@
  var  db = require('../../src/node/db/DB').db,
      API = require('../../src/node/db/API.js'),
    async = require('../../src/node_modules/async'),
+   check = require('validator').check,
 settings = require('../../src/node/utils/Settings');
 
 var pluginSettings = settings.ep_email_notifications;
@@ -44,7 +45,18 @@ exports.handleMessage = function(hook_name, context, callback){
               }); // end async for each
             }
 
-            if(alreadyExists == false){
+            var validatesAsEmail = check(context.message.data.userInfo.email).isEmail();
+            if(!validatesAsEmail){ // send validation failed if it's malformed..  y'know in general fuck em!
+              console.warn("Dropped email subscription due to malformed email address");
+              context.client.json.send({ type: "COLLABROOM",
+                data:{
+                  type: "emailSubscriptionSuccess",
+                  payload: false
+                 }
+              });
+            }
+
+            if(alreadyExists == false && validatesAsEmail == true){
  
               console.warn ("Wrote to the database and sent client a positive response ",context.message.data.userInfo.email);
   
@@ -61,7 +73,7 @@ exports.handleMessage = function(hook_name, context, callback){
    
               context.client.json.send({ type: "COLLABROOM",
                 data:{
-                  type: "email_subscription_success",
+                  type: "emailSubscriptionSuccess",
                   payload: true
                  }
               });
