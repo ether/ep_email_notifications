@@ -23,7 +23,6 @@ Open that pad in ANOTHER BROWSER then begin modifying, you should recieve an ema
 
 # TODO
 * Clean up all code
-* Stop it emailing me if I'm already on the pad
 
 # FUTURE VERSIONS TODO
 * v2 - Get the modified contents from the API HTML diff and append that to the Email and make the email from the server HTML not plain text
