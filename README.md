@@ -1,6 +1,6 @@
 # TODO
 
-* a point to unsubscribe
+* a point to unsubscribe and validate email https://github.com/alfredwesterveld/node-email-verification
 * stop the ui prompting if already subscribed
 * move settings to settings.json
 * Clean up all code
