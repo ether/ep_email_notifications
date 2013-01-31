@@ -71,7 +71,7 @@ function askClientToEnterEmail(){
     // (string | mandatory) the heading of the notification
     title: "Enter your email to recieve an email when someone modifies this pad",
     // (string | mandatory) the text inside the notification
-    text: "<form class='ep_email_form'><label for='ep_email'><input id='ep_email_notification' placeholder='your@email.com' style='padding:5px;width:200px;' type=email><input type=submit style='padding:5px;'></form>",
+    text: "<form class='ep_email_form'><label for='ep_email'><input id='ep_email_notification' placeholder='your@email.com' style='padding:5px;width:200px;' type=email><input type=submit value=subscribe style='padding:5px;'></form>",
     // (bool | optional) if you want it to fade out on its own or just sit there
     sticky: true,
     // (int | optional) the time you want it to be alive for before fading out
