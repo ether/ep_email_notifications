@@ -13,7 +13,7 @@ var staleTime = 30000; // How stale(milliseconds) does a pad need to be before n
 var timers = {};
 var fromName = "Etherpad";
 var fromEmail = "pad@etherpad.org";
-var urlToPads = "http://beta.etherpad.org/p/";
+var urlToPads = "http://beta.etherpad.org/p/"; // The URL to your pads note the trailing /
 
 var server  = email.server.connect({
    host:    "127.0.0.1", 
@@ -39,12 +39,14 @@ exports.padUpdate = function (hook_name, _pad) {
 };
 
 exports.notifyBegin = function(padId){
+  console.warn("Getting "+padId);
   db.get("emailSubscription:" + padId, function(err, recipients){ // get everyone we need to email
+    console.warn(recipients);
     async.forEach(Object.keys(recipients), function(recipient, cb){
-      console.debug("Emailing "+recipient +" about a new begin update");
+      console.warn("Emailing "+recipient +" about a new begin update");
 
       server.send({
-        text:    "Your pad at "+urlToPads+"/p/"+padId +" is being edited, we're just emailing you let you know :)", 
+        text:    "Your pad at "+urlToPads+padId +" is being edited, we're just emailing you let you know :)", 
         from:    fromName+ "<"+fromEmail+">", 
         to:      recipient,
         subject: "Someone begin editing "+padId
@@ -67,10 +69,10 @@ exports.notifyEnd = function(padId){
       console.debug("Emailing "+recipient +" about a new begin update");
 
       server.send({
-        text:    "Your pad at "+urlToPads+"/p/"+padId +" has finished being edited, we're just emailing you let you know :)  The changes look like this:" + changesToPad,
+        text:    "Your pad at "+urlToPads+padId +" has finished being edited, we're just emailing you let you know :)  The changes look like this:" + changesToPad,
         from:    fromName+ "<"+fromEmail+">",
         to:      recipient,
-        subject: "Someone begin editing "+padId
+        subject: "Someone finished editing "+padId
       }, function(err, message) { console.log(err || message); });
 
       cb(); // finish each user
