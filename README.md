@@ -28,6 +28,5 @@ Open that pad in ANOTHER BROWSER then begin modifying, you should recieve an ema
 * Keep a record of when a user was last on a pad
 * Re-enable the pop up 
 * Some schpeil about setting your server up IE Postfix / RDNS & SPF records
-* Exports is undefined error
 * Stop it emailing me if I'm the person who made the updates
 * Allow for various SMTP auth / connectivity types
