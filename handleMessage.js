@@ -96,7 +96,6 @@ exports.setAuthorEmailRegistered = function(email, authorId, padId){
       timestamp: timestamp
   };
   console.debug("registered", registered, " to ", padId);
-  console.warn("WTF");
   // Here we have to basically hack a new value into the database, this isn't clean or polite.
   db.get("emailSubscription:" + padId, function(err, value){ // get the current value
     if(!value){value = {};} // if an emailSubscription doesnt exist yet for this padId don't panic
