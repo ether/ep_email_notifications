@@ -19,7 +19,7 @@ exports.handleClientMessage_emailSubscriptionSuccess = function(hook, context){ 
 }
 
 function init(){
-  var popUpIsAlreadyVisible = $('#ep_email').is(":visible");
+  var popUpIsAlreadyVisible = $('.ep_email_form').is(":visible");
   if(!popUpIsAlreadyVisible){ // if the popup isn't already visible
     if(clientHasAlreadyRegistered()){ // if the client has already registered for emails on this pad.
       // showAlreadyRegistered(); // client has already registered, let em know..
