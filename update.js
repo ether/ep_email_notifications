@@ -60,7 +60,7 @@ exports.notifyBegin = function(padId){
 
 exports.notifyEnd = function(padId){
   // get the modified contents...
-  
+  var changesToPad = "Functionality does not exist";
 
   db.get("emailSubscription:" + padId, function(err, recipients){ // get everyone we need to email
     async.forEach(Object.keys(recipients), function(recipient, cb){

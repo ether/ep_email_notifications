@@ -6,7 +6,6 @@
         "padUpdate": "ep_email_notifications/update",
         "handleMessage": "ep_email_notifications/handleMessage",
         "eejsBlock_scripts": "ep_email_notifications/client",
-        "eejsBlock_editbarMenuRight": "ep_email_notifications/client:eejsBlock_toolbarRight",
         "eejsBlock_embedPopup": "ep_email_notifications/client:eejsBlock_embedPopup"
       },
       "client_hooks": {

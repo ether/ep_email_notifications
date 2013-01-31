@@ -5,11 +5,6 @@ exports.eejsBlock_scripts = function (hook_name, args, cb) {
   return cb();
 };
 
-exports.eejsBlock_toolbarRight = function (hook_name, args, cb) {
-  args.content = args.content + eejs.require("ep_email_notifications/templates/button.html", {}, module);
-  return cb();
-};
-
 exports.eejsBlock_embedPopup = function (hook_name, args, cb) {
   args.content = args.content + eejs.require("ep_email_notifications/templates/embedFrame.html", {}, module);
   return cb();
