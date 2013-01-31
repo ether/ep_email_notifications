@@ -1,5 +1,5 @@
 if(typeof exports == 'undefined'){
-    var exports = this['mymodule'] = {};
+  var exports = this['mymodule'] = {};
 }
 
 exports.postAceInit = function(hook, context){
