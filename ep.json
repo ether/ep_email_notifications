@@ -9,7 +9,7 @@
         "eejsBlock_embedPopup": "ep_email_notifications/client:eejsBlock_embedPopup"
       },
       "client_hooks": {
-        "documentReady":"ep_email_notifications/static/js/ep_email",
+        "postAceInit":"ep_email_notifications/static/js/ep_email:postAceInit",
         "handleClientMessage_emailSubscriptionSuccess":"ep_email_notifications/static/js/ep_email"
       }
     }

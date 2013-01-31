@@ -1,5 +1,4 @@
-// We check pads periodically for activity and notify owners when someone begins editing and when someone finishes.
-
+// Main job is to check pads periodically for activity and notify owners when someone begins editing and when someone finishes.
  var  db = require('../../src/node/db/DB').db,
      API = require('../../src/node/db/API.js'),
    async = require('../../src/node_modules/async'),
@@ -7,20 +6,24 @@
    email = require('emailjs'),
 settings = require('../../src/node/utils/Settings');
 
+// Settings -- EDIT THESE IN settings.json not here..
 var pluginSettings = settings.ep_email_notifications;
-var checkInterval = 3000; // How frequently(milliseconds) to check for pad updates -- Move me to the settings file
-var staleTime = 30000; // How stale(milliseconds) does a pad need to be before notifying subscribers?  Move me to settings
-var timers = {};
-var fromName = "Etherpad";
-var fromEmail = "pad@etherpad.org";
-var urlToPads = "http://beta.etherpad.org/p/"; // The URL to your pads note the trailing /
+var checkFrequency = pluginSettings.checkFrequency || 3000;
+var staleTime = pluginSettings.staleTime || 30000;
+var fromName = pluginSettings.fromName || "Etherpad";
+var fromEmail = pluginSettings.fromEmail || "pad@etherpad.org";
+var urlToPads = pluginSettings.urlToPads || "http://beta.etherpad.org/p/";
+var smtpHostname = pluginSettings.smtpHostname || "127.0.0.1";
 
+// A timer object we maintain to control how we send emails
+var timers = {};
+
+// Connect to the email server
 var server  = email.server.connect({
-   host:    "127.0.0.1", 
+  host: smtpHostname, 
 });
 
 exports.padUpdate = function (hook_name, _pad) {
-
   var pad = _pad.pad;
   var padId = pad.id;
   exports.sendUpdates(padId);
@@ -31,32 +34,33 @@ exports.padUpdate = function (hook_name, _pad) {
     exports.notifyBegin(padId);
     console.debug("Created an interval time check for "+padId);
     // if not then create one and write it to the timers object
-    timers[padId] = exports.createInterval(padId, checkInterval); 
+    timers[padId] = exports.createInterval(padId, checkFrequency); 
   }else{ // an interval already exists so don't create
 
   }
-
 };
 
 exports.notifyBegin = function(padId){
   console.warn("Getting "+padId);
   db.get("emailSubscription:" + padId, function(err, recipients){ // get everyone we need to email
     console.warn(recipients);
-    async.forEach(Object.keys(recipients), function(recipient, cb){
-      console.warn("Emailing "+recipient +" about a new begin update");
-
-      server.send({
-        text:    "Your pad at "+urlToPads+padId +" is being edited, we're just emailing you let you know :)", 
-        from:    fromName+ "<"+fromEmail+">", 
-        to:      recipient,
-        subject: "Someone begin editing "+padId
-      }, function(err, message) { console.log(err || message); });
-
-      cb(); // finish each user
-    },
-    function(err){
-
-    });
+    if(recipients){
+      async.forEach(Object.keys(recipients), function(recipient, cb){
+        console.warn("Emailing "+recipient +" about a new begin update");
+  
+        server.send({
+          text:    "Your pad at "+urlToPads+padId +" is being edited, we're just emailing you let you know :)", 
+          from:    fromName+ "<"+fromEmail+">", 
+          to:      recipient,
+          subject: "Someone begin editing "+padId
+        }, function(err, message) { console.log(err || message); });
+  
+        cb(); // finish each user
+      },
+      function(err){
+  
+      });
+    }
   });
 }
 
@@ -152,10 +156,10 @@ exports.isUserEditingPad = function(padId, user, cb){
    });
 };
 
-// Creates an interval process to check to send Updates based on checkInterval and it returns an ID
+// Creates an interval process to check to send Updates based on checkFrequency and it returns an ID
 exports.createInterval = function(padId){
   return setInterval(function(){
-    exports.sendUpdates(padId), checkInterval
+    exports.sendUpdates(padId), checkFrequency
   });
 }
 

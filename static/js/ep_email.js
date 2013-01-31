@@ -1,4 +1,4 @@
-exports.documentReady = function(){
+exports.postAceInit = function(hook, context){
   // after 10 seconds if we dont already have an email for this author then prompt them
   setTimeout(function(){init()},10000);
 
