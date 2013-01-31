@@ -13,15 +13,13 @@ var staleTime = pluginSettings.staleTime || 30000;
 var fromName = pluginSettings.fromName || "Etherpad";
 var fromEmail = pluginSettings.fromEmail || "pad@etherpad.org";
 var urlToPads = pluginSettings.urlToPads || "http://beta.etherpad.org/p/";
-var smtpHostname = pluginSettings.smtpHostname || "127.0.0.1";
+var emailServer = pluginSettings.emailServer || {host:"127.0.0.1"};
 
 // A timer object we maintain to control how we send emails
 var timers = {};
 
 // Connect to the email server
-var server  = email.server.connect({
-  host: smtpHostname, 
-});
+var server  = email.server.connect(emailServer);
 
 exports.padUpdate = function (hook_name, _pad) {
   var pad = _pad.pad;

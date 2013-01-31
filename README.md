@@ -15,7 +15,9 @@ Open that pad in ANOTHER BROWSER then begin modifying, you should recieve an ema
     fromName: "Etherpad SETTINGS FILE!",
     fromEmail: "pad@etherpad.org",
     urlToPads: "http://beta.etherpad.org/p/", // urlToPads = The URL to your pads note the trailing /
-    smtpHostname: "127.0.0.1"
+    emailServer: { // See https://github.com/eleith/emailjs for settings
+      host: "127.0.0.1"
+    }
   }
 ```
 
@@ -23,8 +25,6 @@ Open that pad in ANOTHER BROWSER then begin modifying, you should recieve an ema
 * stop the ui prompting if already subscribed
 * Clean up all code
 * Stop it emailing me if I'm already on the pad
-* Re-enable the pop up
-* Allow for various SMTP auth / connectivity types
 
 # FUTURE VERSIONS TODO
 * v2 - Get the modified contents from the API HTML diff and append that to the Email and make the email from the server HTML not plain text

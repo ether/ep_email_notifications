@@ -28,7 +28,7 @@ function init(){
     if(clientHasAlreadyRegistered()){ // if the client has already registered for emails on this pad.
       // showAlreadyRegistered(); // client has already registered, let em know..
     }else{
-      // askClientToEnterEmail(); // ask the client to register TODO uncomment me for a pop up
+      askClientToEnterEmail(); // ask the client to register TODO uncomment me for a pop up
     }
   }
 }
