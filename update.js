@@ -55,9 +55,7 @@ exports.handleMessage = function(hook_name, context, callback){
                  }
               });
             }
-
-            if(alreadyExists == false && validatesAsEmail == true){
- 
+            if(alreadyExists == false && validatesAsEmail){
               console.warn ("Wrote to the database and sent client a positive response ",context.message.data.userInfo.email);
   
               exports.setAuthorEmail(
