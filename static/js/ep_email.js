@@ -1,3 +1,5 @@
+var cookie = require('ep_etherpad-lite/static/js/pad_cookie').padcookie;
+
 if(typeof exports == 'undefined'){
   var exports = this['mymodule'] = {};
 }
@@ -28,7 +30,10 @@ function init(){
     if(clientHasAlreadyRegistered()){ // if the client has already registered for emails on this pad.
       // showAlreadyRegistered(); // client has already registered, let em know..
     }else{
-      askClientToEnterEmail(); // ask the client to register TODO uncomment me for a pop up
+      var cookieVal = pad.getPadId() + "email";
+      if(cookie.getPref(cookieVal) !== "true"){ // if this user hasn't already subscribed
+        askClientToEnterEmail(); // ask the client to register TODO uncomment me for a pop up
+      }
     }
   }
 }
@@ -71,7 +76,7 @@ function askClientToEnterEmail(){
     // (string | mandatory) the heading of the notification
     title: "Enter your email to recieve an email when someone modifies this pad",
     // (string | mandatory) the text inside the notification
-    text: "<form class='ep_email_form'><label for='ep_email'><input id='ep_email_notification' placeholder='your@email.com' style='padding:5px;width:200px;' type=email><input type=submit value=subscribe style='padding:5px;'></form>",
+    text: "<form class='ep_email_form'><label for='ep_email'><input id='ep_email_notification' placeholder='your@email.com' style='padding:5px;width:180px;' type=email><input type=submit value=subscribe style='padding:5px;'></form>",
     // (bool | optional) if you want it to fade out on its own or just sit there
     sticky: true,
     // (int | optional) the time you want it to be alive for before fading out
@@ -101,6 +106,7 @@ function sendEmailToServer(){
   message.userInfo.userId = userId;
   if(email){
     pad.collabClient.sendMessage(message);
+    cookie.setPref(message.padId+"email", "true");
   }
 }
 

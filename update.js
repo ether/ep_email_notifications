@@ -68,7 +68,7 @@ exports.notifyEnd = function(padId){
   db.get("emailSubscription:" + padId, function(err, recipients){ // get everyone we need to email
     if(recipients){
       async.forEach(Object.keys(recipients), function(recipient, cb){
-        console.debug("Emailing "+recipient +" about a new begin update");
+        console.warn("Emailing "+recipient +" about a pad finish editing");
   
         server.send({
           text:    "Your pad at "+urlToPads+padId +" has finished being edited, we're just emailing you let you know :)  The changes look like this:" + changesToPad,

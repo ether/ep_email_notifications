@@ -22,7 +22,6 @@ Open that pad in ANOTHER BROWSER then begin modifying, you should recieve an ema
 ```
 
 # TODO
-* stop the ui prompting if already subscribed
 * Clean up all code
 * Stop it emailing me if I'm already on the pad
 
