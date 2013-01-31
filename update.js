@@ -43,7 +43,6 @@ exports.padUpdate = function (hook_name, _pad) {
 exports.notifyBegin = function(padId){
   console.warn("Getting "+padId);
   db.get("emailSubscription:" + padId, function(err, recipients){ // get everyone we need to email
-    console.warn(recipients);
     if(recipients){
       async.forEach(Object.keys(recipients), function(recipient, cb){
         console.warn("Emailing "+recipient +" about a new begin update");
@@ -69,21 +68,23 @@ exports.notifyEnd = function(padId){
   var changesToPad = "Functionality does not exist";
 
   db.get("emailSubscription:" + padId, function(err, recipients){ // get everyone we need to email
-    async.forEach(Object.keys(recipients), function(recipient, cb){
-      console.debug("Emailing "+recipient +" about a new begin update");
-
-      server.send({
-        text:    "Your pad at "+urlToPads+padId +" has finished being edited, we're just emailing you let you know :)  The changes look like this:" + changesToPad,
-        from:    fromName+ "<"+fromEmail+">",
-        to:      recipient,
-        subject: "Someone finished editing "+padId
-      }, function(err, message) { console.log(err || message); });
-
-      cb(); // finish each user
-    },
-    function(err){
-
-    });
+    if(recipients){
+      async.forEach(Object.keys(recipients), function(recipient, cb){
+        console.debug("Emailing "+recipient +" about a new begin update");
+  
+        server.send({
+          text:    "Your pad at "+urlToPads+padId +" has finished being edited, we're just emailing you let you know :)  The changes look like this:" + changesToPad,
+          from:    fromName+ "<"+fromEmail+">",
+          to:      recipient,
+         subject: "Someone finished editing "+padId
+        }, function(err, message) { console.log(err || message); });
+  
+        cb(); // finish each user
+      },
+      function(err){
+  
+      });
+    }
   });
 }
 
