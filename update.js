@@ -18,7 +18,7 @@ var emailServer = pluginSettings.emailServer || {host:"127.0.0.1"};
 // A timer object we maintain to control how we send emails
 var timers = {};
 
-// Connect to the email server
+// Connect to the email server -- This might not be the ideal place to connect but it stops us having lots of connections 
 var server  = email.server.connect(emailServer);
 
 exports.padUpdate = function (hook_name, _pad) {
@@ -28,7 +28,7 @@ exports.padUpdate = function (hook_name, _pad) {
 
   // does an interval not exist for this pad?
   if(!timers[padId]){
-    console.warn("Someone started editing "+padId);
+    console.debug("Someone started editing "+padId);
     exports.notifyBegin(padId);
     console.debug("Created an interval time check for "+padId);
     // if not then create one and write it to the timers object
@@ -39,23 +39,29 @@ exports.padUpdate = function (hook_name, _pad) {
 };
 
 exports.notifyBegin = function(padId){
-  console.warn("Getting "+padId);
+  console.debug("Getting pad email stuff for "+padId);
   db.get("emailSubscription:" + padId, function(err, recipients){ // get everyone we need to email
     if(recipients){
       async.forEach(Object.keys(recipients), function(recipient, cb){
-        console.warn("Emailing "+recipient +" about a new begin update");
-  
-        server.send({
-          text:    "Your pad at "+urlToPads+padId +" is being edited, we're just emailing you let you know :)", 
-          from:    fromName+ "<"+fromEmail+">", 
-          to:      recipient,
-          subject: "Someone begin editing "+padId
-        }, function(err, message) { console.log(err || message); });
-  
+        // Is this recipient already on the pad?
+        exports.isUserEditingPad(padId, recipients[recipient].authorId, function(err,userIsOnPad){ // is the user already on the pad?
+          if(!userIsOnPad){ 
+            console.debug("Emailing "+recipient +" about a new begin update");
+            server.send({
+              text:    "Your pad at "+urlToPads+padId +" is being edited, we're just emailing you let you know :)", 
+              from:    fromName+ "<"+fromEmail+">", 
+              to:      recipient,
+              subject: "Someone begin editing "+padId
+            }, function(err, message) { console.log(err || message); });
+          }
+          else{
+            console.debug("Didn't send an email because user is already on the pad");
+          }
+        });
         cb(); // finish each user
       },
       function(err){
-  
+        // do some error handling..
       });
     }
   });
@@ -68,29 +74,33 @@ exports.notifyEnd = function(padId){
   db.get("emailSubscription:" + padId, function(err, recipients){ // get everyone we need to email
     if(recipients){
       async.forEach(Object.keys(recipients), function(recipient, cb){
-        console.warn("Emailing "+recipient +" about a pad finish editing");
-  
-        server.send({
-          text:    "Your pad at "+urlToPads+padId +" has finished being edited, we're just emailing you let you know :)  The changes look like this:" + changesToPad,
-          from:    fromName+ "<"+fromEmail+">",
-          to:      recipient,
-         subject: "Someone finished editing "+padId
-        }, function(err, message) { console.log(err || message); });
-  
+        // Is this recipient already on the pad?
+        exports.isUserEditingPad(padId, recipients[recipient].authorId, function(err,userIsOnPad){ // is the user already on the$
+          if(!userIsOnPad){
+            console.debug("Emailing "+recipient +" about a pad finished being updated");
+            server.send({
+              text:    "Your pad at "+urlToPads+padId +" has finished being edited, we're just emailing you let you know :)  The changes look like this:" + changesToPad,
+              from:    fromName+ "<"+fromEmail+">",
+              to:      recipient,
+              subject: "Someone finished editing "+padId
+            }, function(err, message) { console.log(err || message); });
+          }
+          else{
+            console.debug("Didn't send an email because user is already on the pad");
+          }
+        });
         cb(); // finish each user
       },
       function(err){
-  
+        // do some error handling..
       });
     }
   });
 }
 
 exports.sendUpdates = function(padId){
-
   // check to see if we can delete this interval
   API.getLastEdited(padId, function(callback, message){
-
     // we delete an interval if a pad hasn't been edited in X seconds.
     var currTS = new Date().getTime();
     if(currTS - message.lastEdited > staleTime){
@@ -99,47 +109,26 @@ exports.sendUpdates = function(padId){
       var interval = timers[padId];
       clearInterval(timers[padId]); // remove the interval timer
       delete timers[padId]; // remove the entry from the padId
-      
     }else{
       console.debug("email timeout not stale so not deleting");
     }
-
   });
-
   // The status of the users relationship with the pad -- IE if it's subscribed to this pad / if it's already on the pad
   // This comes frmo the database
-  var userStatus = {};
-
-  // Temporary user object
-  var user = {
-    name:  "John McLear",
-    email: "john@mclear.co.uk",
-    id:    "a.n4gEeMLsv1GivNeh"
-  }
-
-  console.debug("ep_email_noficiations: padID of pad being edited:"+padId);
-  exports.isUserEditingPad(padId, user, function(err,results){
-    userStatus.userIsEditing = results;
-    console.debug("isUserEditingPad is:", results);
-  });
-
+  var userStatus = {}; // I'm not even sure we use this value..  I put it here when drunk or something
 }
 
 
 // Is the user editing the pad?
 exports.isUserEditingPad = function(padId, user, cb){
   API.padUsers(padId, function(callback, padUsers){ // get the current users editing the pad
-
     var userIsEditing = false;
-    console.debug("Pad Users:"+padUsers);
-
+    console.debug("Current Pad Users:"+padUsers);
     // for each user on the pad right now
     async.forEach(padUsers.padUsers,
-
       function(userOnPad, callback){
-
-        if(userOnPad.id == user.id){
-          console.debug("I'm on the pad so don't send any notification");
+        if(userOnPad.id == user){
+          console.debug("User is on the pad so don't send any notification");
           userIsEditing = true; // If the user is editing the pad then return true
         }else{
           userIsEditing = false; // If the user isnt on this pad then that'd be okay to contact em
@@ -147,11 +136,9 @@ exports.isUserEditingPad = function(padId, user, cb){
         callback(userIsEditing);
 
       },
-
       function(err){
         cb(null, userIsEditing);
       });
-
    });
 };
 
