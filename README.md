@@ -6,3 +6,5 @@
 * Clean up all code
 * Get the modified contents from the API HTML diff
 * Keep a record of when a user was last on a pad
+* Re-enable the pop up 
+* Some schpeil about setting your server up IE Postfix / RDNS & SPF records
