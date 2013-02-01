@@ -48,10 +48,10 @@ exports.notifyBegin = function(padId){
           if(!userIsOnPad){ 
             console.debug("Emailing "+recipient +" about a new begin update");
             server.send({
-              text:    "Your pad at "+urlToPads+padId +" is being edited, we're just emailing you let you know :)", 
+              text:    "Your pad at "+urlToPads+padId +" is being edited, we're just emailing you let you know :)\n\n -- This plugin is in alpha state, can you help fund it's development? https://github.com/johnmclear/ep_email_notifications", 
               from:    fromName+ "<"+fromEmail+">", 
               to:      recipient,
-              subject: "Someone begin editing "+padId
+              subject: "Someone started editing "+padId
             }, function(err, message) { console.log(err || message); });
           }
           else{
@@ -79,7 +79,7 @@ exports.notifyEnd = function(padId){
           if(!userIsOnPad){
             console.debug("Emailing "+recipient +" about a pad finished being updated");
             server.send({
-              text:    "Your pad at "+urlToPads+padId +" has finished being edited, we're just emailing you let you know :)  The changes look like this:" + changesToPad,
+              text:    "Your pad at "+urlToPads+padId +" has finished being edited, we're just emailing you let you know :) \n\n  The changes look like this: \n" + changesToPad,
               from:    fromName+ "<"+fromEmail+">",
               to:      recipient,
               subject: "Someone finished editing "+padId
