@@ -8,8 +8,8 @@ settings = require('../../src/node/utils/Settings');
 
 // Settings -- EDIT THESE IN settings.json not here..
 var pluginSettings = settings.ep_email_notifications;
-var checkFrequency = pluginSettings.checkFrequency || 3000;
-var staleTime = pluginSettings.staleTime || 30000;
+var checkFrequency = pluginSettings.checkFrequency || 60000; // 10 seconds
+var staleTime = pluginSettings.staleTime || 300000; // 5 minutes
 var fromName = pluginSettings.fromName || "Etherpad";
 var fromEmail = pluginSettings.fromEmail || "pad@etherpad.org";
 var urlToPads = pluginSettings.urlToPads || "http://beta.etherpad.org/p/";
