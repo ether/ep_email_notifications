@@ -39,7 +39,7 @@ exports.padUpdate = function (hook_name, _pad) {
 };
 
 exports.notifyBegin = function(padId){
-  console.debug("Getting pad email stuff for "+padId);
+  console.warn("Getting pad email stuff for "+padId);
   db.get("emailSubscription:" + padId, function(err, recipients){ // get everyone we need to email
     if(recipients){
       async.forEach(Object.keys(recipients), function(recipient, cb){
@@ -121,6 +121,8 @@ exports.sendUpdates = function(padId){
 
 // Is the user editing the pad?
 exports.isUserEditingPad = function(padId, user, cb){
+  console.warn("padId is",padId);
+  /*
   API.padUsers(padId, function(callback, padUsers){ // get the current users editing the pad
     var userIsEditing = false;
     console.debug("Current Pad Users:"+padUsers);
@@ -140,6 +142,8 @@ exports.isUserEditingPad = function(padId, user, cb){
         cb(null, userIsEditing);
       });
    });
+  */
+  cb(null, false);
 };
 
 // Creates an interval process to check to send Updates based on checkFrequency and it returns an ID
