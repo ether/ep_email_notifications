@@ -1,13 +1,13 @@
 # Description
-This plugin allows users to subscribe to pads and recieve email updates when a pad is being modified.  You can modify the frequency.  This plugin is very much in alpha stage and has a lot of things TODO (See TODO).
+This plugin allows users to subscribe to pads and receive email updates when a pad is being modified.  You can modify the frequency.  This plugin is very much in alpha stage and has a lot of things TODO (See TODO).
 
 # Installation
 Make sure an SMTP gateway is installed IE postfix
 Configure SPF and RDNS records to ensure proper mail flow <-- Search online
 Copy/Edit the below to your settings.json
 Connect to a pad, Click on the Share/Embed link and enter in your email address.
-Open that pad in ANOTHER BROWSER then begin modifying, you should recieve an email when the pad has begun editing and once the pad has gone stale (when everyone stops editing it and a time period passes).
-NOTE: You will NOT recieve an email if you(the author that registered their email) are currently on or editing that pad!
+Open that pad in ANOTHER BROWSER then begin modifying, you should receive an email when the pad has begun editing and once the pad has gone stale (when everyone stops editing it and a time period passes).
+NOTE: You will NOT receive an email if you(the author that registered their email) are currently on or editing that pad!
 
 ```
  "ep_email_notifications" : {

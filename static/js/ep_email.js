@@ -43,7 +43,7 @@ function showRegistrationSuccess(){ // show a successful registration message
     // (string | mandatory) the heading of the notification
     title: "Email subscribed",
     // (string | mandatory) the text inside the notification
-    text: "You will recieve email when someone changes this pad.  If this is the first time you have requested emails you may need to confirm your email address"
+    text: "You will receive email when someone changes this pad.  If this is the first time you have requested emails you may need to confirm your email address"
   });
 }
 
@@ -74,7 +74,7 @@ function clientHasAlreadyRegistered(){ // Has the client already registered for 
 function askClientToEnterEmail(){
   $.gritter.add({
     // (string | mandatory) the heading of the notification
-    title: "Enter your email to recieve an email when someone modifies this pad",
+    title: "Enter your email to receive an email when someone modifies this pad",
     // (string | mandatory) the text inside the notification
     text: "<form class='ep_email_form'><label for='ep_email'><input id='ep_email_notification' placeholder='your@email.com' style='padding:5px;width:180px;' type=email><input type=submit value=subscribe style='padding:5px;'></form>",
     // (bool | optional) if you want it to fade out on its own or just sit there
