@@ -74,7 +74,7 @@ exports.handleMessage = function(hook_name, context, callback){
             }
           }); // close db get
 
-          callback(null); // don't run onto passing colorId or anything else to the message handler
+          callback([null]); // don't run onto passing colorId or anything else to the message handler
 
         }
       }
