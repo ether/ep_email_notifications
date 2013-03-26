@@ -45,10 +45,11 @@ exports.notifyBegin = function(padId){
       async.forEach(Object.keys(recipients), function(recipient, cb){
         // Is this recipient already on the pad?
         exports.isUserEditingPad(padId, recipients[recipient].authorId, function(err,userIsOnPad){ // is the user already on the pad?
-          if(!userIsOnPad){ 
+	  var onStart = typeof(recipients[recipient].onStart) == "undefined" || recipients[recipient].onStart?true:false; // In case onStart wasn't defined we set it to true
+          if(!userIsOnPad && onStart){ 
             console.debug("Emailing "+recipient +" about a new begin update");
             server.send({
-              text:    "Your pad at "+urlToPads+padId +" is being edited, we're just emailing you let you know :)\n\n -- This plugin is in alpha state, can you help fund it's development? https://github.com/johnmclear/ep_email_notifications", 
+              text:    "Your pad at "+urlToPads+padId +" is being edited, we're just emailing you let you know :)", 
               from:    fromName+ "<"+fromEmail+">", 
               to:      recipient,
               subject: "Someone started editing "+padId
@@ -76,7 +77,9 @@ exports.notifyEnd = function(padId){
       async.forEach(Object.keys(recipients), function(recipient, cb){
         // Is this recipient already on the pad?
         exports.isUserEditingPad(padId, recipients[recipient].authorId, function(err,userIsOnPad){ // is the user already on the$
-          if(!userIsOnPad){
+	  var onEnd = typeof(recipients[recipient].onEnd) == "undefined" || recipients[recipient].onEnd?true:false; // In case onEnd wasn't defined we set it to true
+
+          if(!userIsOnPad && onEnd){
             console.debug("Emailing "+recipient +" about a pad finished being updated");
             server.send({
               text:    "Your pad at "+urlToPads+padId +" has finished being edited, we're just emailing you let you know :) \n\n  The changes look like this: \n" + changesToPad,
