@@ -13,17 +13,14 @@ exports.handleMessage = function(hook_name, context, callback){
       if (context.message.data.userInfo){
         if(context.message.data.userInfo.email){ // it contains email
           console.debug(context.message);
-	  console.info("ep_mail: " + context.message.data.userInfo.email + " / " + context.message.data.userInfo.email_option);
-	  console.info(context.message.data.userInfo);
 
           // does email Subscription already exist for this email address?
           db.get("emailSubscription:"+context.message.data.padId, function(err, userIds){
 
             var alreadyExists = false;
-	    console.info(userIds);
             if(userIds){
               async.forEach(Object.keys(userIds), function(user, cb){
-                console.info("UserIds subscribed by email to this pad:", userIds);
+                console.debug("UserIds subscribed by email to this pad:", userIds);
                 if(user == context.message.data.userInfo.email){ //  If we already have this email registered for this pad
                   // This user ID is already assigned to this padId so don't do anything except tell the user they are already subscribed somehow..
                   alreadyExists = true;
@@ -38,7 +35,7 @@ exports.handleMessage = function(hook_name, context, callback){
 
 	    if(context.message.data.userInfo.email_option == 'subscribe' && alreadyExists == true){
 	      // SUbscription
-	      console.info("email ", context.message.data.userInfo.email, "already subscribed to ", context.message.data.padId, " so sending message to client");
+	      console.debug("email ", context.message.data.userInfo.email, "already subscribed to ", context.message.data.padId, " so sending message to client");
 
 	      context.client.json.send({ type: "COLLABROOM",
                 data:{
@@ -58,7 +55,7 @@ exports.handleMessage = function(hook_name, context, callback){
                    }
                 });
               } else {
-                console.info ("Subscription: Wrote to the database and sent client a positive response ",context.message.data.userInfo.email);
+                console.debug ("Subscription: Wrote to the database and sent client a positive response ",context.message.data.userInfo.email);
 
                 exports.setAuthorEmail(
                   context.message.data.userInfo.userId,
@@ -81,7 +78,7 @@ exports.handleMessage = function(hook_name, context, callback){
 	      }
             } else if(context.message.data.userInfo.email_option == 'unsubscribe' && alreadyExists == true) {
 	      // Unsubscription
-              console.info ("Unsubscription: Remove from the database and sent client a positive response ",context.message.data.userInfo.email);
+              console.debug ("Unsubscription: Remove from the database and sent client a positive response ",context.message.data.userInfo.email);
 
 	      exports.unsetAuthorEmail(
                 context.message.data.userInfo.userId,
@@ -103,7 +100,7 @@ exports.handleMessage = function(hook_name, context, callback){
               });
 	    } else if(context.message.data.userInfo.email_option == 'unsubscribe' && alreadyExists == false) {
 	      // Unsubscription
-	      console.info ("Unsubscription: Send client a negative response ",context.message.data.userInfo.email);
+	      console.debug ("Unsubscription: Send client a negative response ",context.message.data.userInfo.email);
 
 	      context.client.json.send({ type: "COLLABROOM",
                 data:{
@@ -129,7 +126,7 @@ exports.handleMessage = function(hook_name, context, callback){
             if(userIds){
               async.forEach(Object.keys(userIds), function(user, cb){
                 if(userIds[user].authorId == context.message.data.userInfo.userId){ //  if we find the same Id in the Db as the one used by the user
-                  console.info("Options for this pad ", userIds[user].authorId, " found in the Db");
+                  console.debug("Options for this pad ", userIds[user].authorId, " found in the Db");
                   userIdFound = true;
 
                   // We send back the options set for this user
