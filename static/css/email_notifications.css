@@ -1,0 +1,10 @@
+.ep_email_settings {
+	display: none;
+	padding-left: 1.5em;
+	padding: .2em;
+}
+
+.ep_email_input {
+	padding:.2em;
+	width:177px;
+}
