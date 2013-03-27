@@ -45,8 +45,8 @@ exports.notifyBegin = function(padId){
       async.forEach(Object.keys(recipients), function(recipient, cb){
         // Is this recipient already on the pad?
         exports.isUserEditingPad(padId, recipients[recipient].authorId, function(err,userIsOnPad){ // is the user already on the pad?
-	  var onStart = typeof(recipients[recipient].onStart) == "undefined" || recipients[recipient].onStart?true:false; // In case onStart wasn't defined we set it to true
-          if(!userIsOnPad && onStart){ 
+          var onStart = typeof(recipients[recipient].onStart) == "undefined" || recipients[recipient].onStart?true:false; // In case onStart wasn't defined we set it to true
+          if(!userIsOnPad && onStart){
             console.debug("Emailing "+recipient +" about a new begin update");
             server.send({
               text:    "Your pad at "+urlToPads+padId +" is being edited, we're just emailing you let you know :)", 
@@ -77,7 +77,7 @@ exports.notifyEnd = function(padId){
       async.forEach(Object.keys(recipients), function(recipient, cb){
         // Is this recipient already on the pad?
         exports.isUserEditingPad(padId, recipients[recipient].authorId, function(err,userIsOnPad){ // is the user already on the$
-	  var onEnd = typeof(recipients[recipient].onEnd) == "undefined" || recipients[recipient].onEnd?true:false; // In case onEnd wasn't defined we set it to true
+          var onEnd = typeof(recipients[recipient].onEnd) == "undefined" || recipients[recipient].onEnd?true:false; // In case onEnd wasn't defined we set it to false
 
           if(!userIsOnPad && onEnd){
             console.debug("Emailing "+recipient +" about a pad finished being updated");

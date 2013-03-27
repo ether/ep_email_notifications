@@ -33,20 +33,21 @@ exports.handleMessage = function(hook_name, context, callback){
               }); // end async for each
             }
 
-	    if(context.message.data.userInfo.email_option == 'subscribe' && alreadyExists == true){
-	      // SUbscription
-	      console.debug("email ", context.message.data.userInfo.email, "already subscribed to ", context.message.data.padId, " so sending message to client");
+            if(context.message.data.userInfo.email_option == 'subscribe' && alreadyExists == true){
+              // SUbscription
+              console.debug("email ", context.message.data.userInfo.email, "already subscribed to ", context.message.data.padId, " so sending message to client");
 
-	      context.client.json.send({ type: "COLLABROOM",
+              context.client.json.send({ type: "COLLABROOM",
                 data:{
                   type: "emailSubscriptionSuccess",
                   payload: false
                 }
               });
             } else if(context.message.data.userInfo.email_option == 'subscribe' && alreadyExists == false){
-	      // SUbscription
+              // SUbscription
               var validatesAsEmail = check(context.message.data.userInfo.email).isEmail();
-              if(!validatesAsEmail){ // send validation failed if it's malformed..  y'know in general fuck em!
+              if(!validatesAsEmail){
+                // Subscription -> failed coz mail malformed..  y'know in general fuck em!
                 console.warn("Dropped email subscription due to malformed email address");
                 context.client.json.send({ type: "COLLABROOM",
                   data:{
@@ -55,12 +56,13 @@ exports.handleMessage = function(hook_name, context, callback){
                    }
                 });
               } else {
+                // Subscription -> Go for it
                 console.debug ("Subscription: Wrote to the database and sent client a positive response ",context.message.data.userInfo.email);
 
                 exports.setAuthorEmail(
                   context.message.data.userInfo.userId,
                   context.message.data.userInfo,
-		  callback
+                  callback
                 );
 
                 exports.setAuthorEmailRegistered(
@@ -75,15 +77,15 @@ exports.handleMessage = function(hook_name, context, callback){
                     payload: true
                    }
                 });
-	      }
+              }
             } else if(context.message.data.userInfo.email_option == 'unsubscribe' && alreadyExists == true) {
-	      // Unsubscription
+              // Unsubscription -> Go for it
               console.debug ("Unsubscription: Remove from the database and sent client a positive response ",context.message.data.userInfo.email);
 
-	      exports.unsetAuthorEmail(
+              exports.unsetAuthorEmail(
                 context.message.data.userInfo.userId,
                 context.message.data.userInfo,
-		callback
+                callback
               );
 
               exports.unsetAuthorEmailRegistered(
@@ -98,17 +100,17 @@ exports.handleMessage = function(hook_name, context, callback){
                   payload: true
                  }
               });
-	    } else if(context.message.data.userInfo.email_option == 'unsubscribe' && alreadyExists == false) {
-	      // Unsubscription
-	      console.debug ("Unsubscription: Send client a negative response ",context.message.data.userInfo.email);
+            } else if(context.message.data.userInfo.email_option == 'unsubscribe' && alreadyExists == false) {
+              // Unsubscription -> Send failed as email not found
+              console.debug ("Unsubscription: Send client a negative response ",context.message.data.userInfo.email);
 
-	      context.client.json.send({ type: "COLLABROOM",
+              context.client.json.send({ type: "COLLABROOM",
                 data:{
                   type: "emailUnsubscriptionSuccess",
                   payload: false
                 }
               });
-	    }
+            }
           }); // close db get
 
           callback([null]); // don't run onto passing colorId or anything else to the message handler
@@ -121,7 +123,7 @@ exports.handleMessage = function(hook_name, context, callback){
           console.debug(context.message);
 
           var userIdFound = false;
-          // does email Subscription already exist for this name and padID?
+          // does email Subscription already exist for this UserId?
           db.get("emailSubscription:"+context.message.data.padId, function(err, userIds){
             if(userIds){
               async.forEach(Object.keys(userIds), function(user, cb){
@@ -129,7 +131,7 @@ exports.handleMessage = function(hook_name, context, callback){
                   console.debug("Options for this pad ", userIds[user].authorId, " found in the Db");
                   userIdFound = true;
 
-                  // We send back the options set for this user
+                  // We send back the options associated to this userId
                   context.client.json.send({ type: "COLLABROOM",
                     data:{
                       type: "emailNotificationGetUserInfo",
@@ -152,13 +154,13 @@ exports.handleMessage = function(hook_name, context, callback){
           });
 
           if (!userIdFound) {
-            // We send back the options set for this user
+            // No options set for this userId
             context.client.json.send({ type: "COLLABROOM",
               data:{
                 type: "emailNotificationGetUserInfo",
                 payload: {
                   success:false
-                }  
+                }
               }
             });
           }
@@ -197,19 +199,26 @@ exports.setAuthorEmailRegistered = function(datas, authorId, padId){
 // Updates the database by removing the email record for that AuthorId
 exports.unsetAuthorEmail = function (author, datas, callback){
   db.get("globalAuthor:" + author, function(err, value){ // get the current value
+
+    // Remove the email option from the datas
     delete value['email'];
+
+    // Write the modified datas back in the Db
     db.set("globalAuthor:" + author, value);
   });
 }
 
-// Remove email and padId from the database
+// Remove email, options and padId from the database
 exports.unsetAuthorEmailRegistered = function(datas, authorId, padId){
   console.debug("unregistered", datas.email, " to ", padId);
-  // Here we have to basically hack a new value into the database, this isn't clean or polite.
-  db.get("emailSubscription:" + padId, function(err, value){ // get the current value
-    delete value[datas.email]; // remove the registered values to the object
-    console.warn("written to database");
-    db.set("emailSubscription:" + padId, value); // stick it in the database
-  });
 
+  db.get("emailSubscription:" + padId, function(err, value){ // get the current value
+
+    // remove the registered options from the object
+    delete value[datas.email];
+
+    // Write the modified datas back in the Db
+    console.warn("written to database");
+    db.set("emailSubscription:" + padId, value);
+  });
 }

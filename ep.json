@@ -6,8 +6,8 @@
         "padUpdate": "ep_email_notifications/update",
         "handleMessage": "ep_email_notifications/handleMessage",
         "eejsBlock_scripts": "ep_email_notifications/client",
-	"eejsBlock_mySettings": "ep_email_notifications/client:eejsBlock_mySettings",
-	"eejsBlock_styles": "ep_email_notifications/client:eejsBlock_styles"
+        "eejsBlock_mySettings": "ep_email_notifications/client:eejsBlock_mySettings",
+        "eejsBlock_styles": "ep_email_notifications/client:eejsBlock_styles"
       },
       "client_hooks": {
         "postAceInit":"ep_email_notifications/static/js/ep_email:postAceInit",

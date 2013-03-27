@@ -22,14 +22,14 @@ exports.postAceInit = function(hook, context){
 
   // Prepare subscription before submit form
   $('#ep_email_subscribe').on('click', function() {
-	$('#ep_email_option').val('subscribe');
-	checkAndSend();
+        $('#ep_email_option').val('subscribe');
+        checkAndSend();
   });
 
   // Prepare unsubscription before submit form
   $('#ep_email_unsubscribe').on('click', function() {
-	$('#ep_email_option').val('unsubscribe');
-	checkAndSend();
+        $('#ep_email_option').val('unsubscribe');
+        checkAndSend();
   });
 
   // subscribe by email can be active..
