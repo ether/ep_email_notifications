@@ -1,10 +1,34 @@
 .ep_email_settings {
   display: none;
-  padding-left: 1.5em;
-  padding: .2em;
+  padding: 0.2em 0.2em 0.2em 0.5em;
+}
+
+.ep_email_buttons {
+  padding:5px;
+}
+
+.ep_email_checkbox {
+  margin-left:0.3em;
 }
 
 .ep_email_input {
   padding:.2em;
   width:177px;
+}
+
+#ep_email_form_popup > p {
+  font-size:x-small;
+}
+
+#ep_email_form_popup .ep_email_buttons {
+  margin-top: .5em;
+}
+
+#ep_email_form_popup .ep_email_checkbox {
+  margin-top: .2em;
+}
+
+#ep_email_form_popup .ep_email_input {
+  margin: .3em 0;
+  width:95%;
 }
