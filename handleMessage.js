@@ -119,7 +119,7 @@ exports.handleMessage = function(hook_name, context, callback){
               exports.sendUserInfo (
                 context,
                 userIdFound,
-                "", 
+                "",
                 ""
               );
             }
