@@ -6,6 +6,23 @@ if(typeof exports == 'undefined'){
 }
 
 exports.postAceInit = function(hook, context){
+  // Test if settings are good before continuing
+  if (typeof clientVars.panelDisplayLocation != "object") {
+    $.gritter.add({
+      // (string | mandatory) the heading of the notification
+      title: "Email subscription error",
+      // (string | mandatory) the text inside the notification
+      text: "Some settings for the 'email_Notifications' plugin are missing.<br />Please contact your administrator.",
+      // (int | optional) the time you want it to be alive for before fading out
+      time: 10000,
+    });
+
+    // Hide the notification menu in mysettings
+    $('#options-emailNotifications').parent().hide();
+
+    return false;
+  }
+
   // If plugin settings set panel form in mysettings menu
   if (clientVars.panelDisplayLocation.mysettings == true) {
     // Uncheck the checkbox incase of reminiscence
