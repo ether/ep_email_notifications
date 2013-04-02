@@ -15,19 +15,22 @@ exports.registerRoute = function (hook_name, args, callback) {
     var action = param[0];
     var actionId = param[1];
     var padURL = req.protocol + "://" + req.get('host') + "/p/" +padId;
-    var resultDb = {};
 
-    async.series(
+    async.waterfall(
       [
         function(cb) {
           // Is the (un)subscription valid (exists & not older than 24h)
           db.get("emailSubscription:"+padId, function(err, userIds){
-
             var foundInDb = false;
             var timeDiffGood = false;
             var email = "your email";
+            var resultDb = {
+              "foundInDb": foundInDb,
+              "timeDiffGood": timeDiffGood,
+              "email": email
+            }
 
-            if(userIds && userIds['pending'] && userIds['pending'].length > 0){
+            if(userIds && userIds['pending']){
               async.forEach(Object.keys(userIds['pending']), function(user){
                 var userInfo = userIds['pending'][user];
 
@@ -68,41 +71,41 @@ exports.registerRoute = function (hook_name, args, callback) {
                       padId
                     );
                   }
+
+                  resultDb = {
+                    "foundInDb": foundInDb,
+                    "timeDiffGood": timeDiffGood,
+                    "email": user
+                  }
                 }
               },
 
               function(err, msg){
-                // There should be something in here!
-                console.error("Error in emailSubscription async in first function", err, " -> ", msg);
+                if (err != null) {
+                  console.error("Error in async.forEach", err, " -> ", msg);
+                }
               }); // end async for each
             }
-
-            resultDb = {
-              "foundInDb": foundInDb,
-              "timeDiffGood": timeDiffGood,
-              "email": email
-            }
-
-            cb(null, 1);
+            cb(null, resultDb);
           });
         },
 
-        function(cb) {
+        function(resultDb, cb) {
           // Create and send the output message
           sendContent(res, args, action, padId, padURL, resultDb);
-
-          cb(null, 2);
+          cb(null, resultDb);
         },
 
-        function(cb) {
+        function(resultDb, cb) {
           // Take a moment to clean all obsolete pending data
           cleanPendingData(padId);
-
-          cb(null, 3);
+          cb(null, resultDb);
         }
       ],
       function(err, results){
-        console.error("Callback async.series: Err -> ", err, " / results -> ", results);
+        if (err != null) {
+          console.error("Callback async.series: Err -> ", err, " / results -> ", results);
+        }
       }
     );
   });
