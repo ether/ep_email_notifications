@@ -1,6 +1,9 @@
 # Description
 This plugin allows users to subscribe to pads and receive email updates when a pad is being modified.  You can modify the frequency.  This plugin is very much in alpha stage and has a lot of things TODO (See TODO).
 
+# Source code
+On Github : https://github.com/JohnMcLear/ep_email_notifications
+
 # Installation
 Make sure an SMTP gateway is installed IE postfix
 Configure SPF and RDNS records to ensure proper mail flow <-- Search online
@@ -25,6 +28,11 @@ NOTE: You will NOT receive an email if you(the author that registered their emai
     }
   }
 ```
+
+# Translation
+This plugin has for now an english and french translation.
+In case you would like to have it in another language, you can easily translate the few sentences and then contact us on irc (#etherpad-lite-dev on irc.freenode.net) or create a Pull-Request on the GitHub repository.
+You can find the sentences to translate in the ep_email_notifications/locales/ directory.
 
 # TODO
 * Clean up all code

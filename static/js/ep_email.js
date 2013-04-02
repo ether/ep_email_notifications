@@ -10,9 +10,9 @@ exports.postAceInit = function(hook, context){
   if (typeof clientVars.panelDisplayLocation != "object") {
     $.gritter.add({
       // (string | mandatory) the heading of the notification
-      title: "Email subscription error",
+      title: window._('ep_email_notifications.titleGritterError'),
       // (string | mandatory) the text inside the notification
-      text: "Some settings for the 'email_Notifications' plugin are missing.<br />Please contact your administrator.",
+      text: window._('ep_email_notifications.msgParamsMissing'),
       // (int | optional) the time you want it to be alive for before fading out
       time: 10000,
     });
@@ -150,9 +150,9 @@ function askClientToEnterEmail(){
 
   $.gritter.add({
     // (string | mandatory) the heading of the notification
-    title: "Email subscription",
+    title: window._('ep_email_notifications.titleGritterSubscr'),
     // (string | mandatory) the text inside the notification
-    text: "<p>(Receive an email when someone modifies this pad)</p>" + formContent,
+    text: "<p>" + window._('ep_email_notifications.headerGritterSubscr') + "</p>" + formContent,
     // (bool | optional) if you want it to fade out on its own or just sit there
     sticky: true,
     // (int | optional) the time you want it to be alive for before fading out
@@ -195,9 +195,9 @@ function checkAndSend(e) {
       && !$('#' + formName + ' [name=ep_email_onEnd]').is(':checked')) {
     $.gritter.add({
       // (string | mandatory) the heading of the notification
-      title: "Email subscription error",
+      title: window._('ep_email_notifications.titleGritterError'),
       // (string | mandatory) the text inside the notification
-      text: "You need to check at least one of the two options from 'Send a mail when someone..'"
+      text: window._('ep_email_notifications.msgOptionsNotChecked')
     });
   } else if (email) {
     $('#' + formName).submit();
@@ -253,9 +253,9 @@ Manage return msgs from server
 function showRegistrationSuccess(){
   $.gritter.add({
     // (string | mandatory) the heading of the notification
-    title: "Email subscription",
+    title: window._('ep_email_notifications.titleGritterSubscr'),
     // (string | mandatory) the text inside the notification
-    text: "An email was sent to your address.<br />Click on the link in order to validate your subscription.",
+    text: window._('ep_email_notifications.msgSubscrSuccess'),
     // (int | optional) the time you want it to be alive for before fading out
     time: 10000
   });
@@ -266,19 +266,19 @@ function showRegistrationSuccess(){
  */
 function showAlreadyRegistered(type){
   if (type == "malformedEmail") {
-    var msg = "The email address is malformed";
+    var msg = window._('ep_email_notifications.msgEmailMalformed');
   } else if (type == "alreadyRegistered") {
-    var msg = "You are already registered for emails for this pad";
+    var msg = window._('ep_email_notifications.msgAlreadySubscr');
   } else {
-    var msg = "Unknown error";
+    var msg = window._('ep_email_notifications.msgUnknownErr');
   }
   $.gritter.add({
     // (string | mandatory) the heading of the notification
-    title: "Email subscription",
+    title: window._('ep_email_notifications.titleGritterSubscr'),
     // (string | mandatory) the text inside the notification
     text: msg,
-    // (bool | optional) if you want it to fade out on its own or just sit there
-    sticky: false
+    // (int | optional) the time you want it to be alive for before fading out
+    time: 7000
   });
 
 }
@@ -289,9 +289,9 @@ function showAlreadyRegistered(type){
 function showUnregistrationSuccess(){
   $.gritter.add({
     // (string | mandatory) the heading of the notification
-    title: "Email unsubscription",
+    title: window._('ep_email_notifications.titleGritterUnsubscr'),
     // (string | mandatory) the text inside the notification
-    text: "An email was sent to your address.<br />Click on the link in order to validate your unsubscription.",
+    text: window._('ep_email_notifications.msgUnsubscrSuccess'),
     // (int | optional) the time you want it to be alive for before fading out
     time: 10000
   });
@@ -303,11 +303,11 @@ function showUnregistrationSuccess(){
 function showWasNotRegistered(){
   $.gritter.add({
     // (string | mandatory) the heading of the notification
-    title: "Email unsubscription",
+    title: window._('ep_email_notifications.titleGritterUnsubscr'),
     // (string | mandatory) the text inside the notification
-    text: "This email address is not registered for this pad",
-    // (bool | optional) if you want it to fade out on its own or just sit there
-    sticky: false
+    text: window._('ep_email_notifications.msgUnsubscrNotExisting'),
+    // (int | optional) the time you want it to be alive for before fading out
+    time: 7000
   });
 
 }
