@@ -43,22 +43,25 @@ exports.notifyBegin = function(padId){
   db.get("emailSubscription:" + padId, function(err, recipients){ // get everyone we need to email
     if(recipients){
       async.forEach(Object.keys(recipients), function(recipient, cb){
-        // Is this recipient already on the pad?
-        exports.isUserEditingPad(padId, recipients[recipient].authorId, function(err,userIsOnPad){ // is the user already on the pad?
-          var onStart = typeof(recipients[recipient].onStart) == "undefined" || recipients[recipient].onStart?true:false; // In case onStart wasn't defined we set it to true
-          if(!userIsOnPad && onStart){
-            console.debug("Emailing "+recipient +" about a new begin update");
-            server.send({
-              text:    "Your pad at "+urlToPads+padId +" is being edited, we're just emailing you let you know :)", 
-              from:    fromName+ "<"+fromEmail+">", 
-              to:      recipient,
-              subject: "Someone started editing "+padId
-            }, function(err, message) { console.log(err || message); });
-          }
-          else{
-            console.debug("Didn't send an email because user is already on the pad");
-          }
-        });
+        //avoid the 'pending' section
+        if (recipient != 'pending') {
+          // Is this recipient already on the pad?
+          exports.isUserEditingPad(padId, recipients[recipient].authorId, function(err,userIsOnPad){ // is the user already on the pad?
+            var onStart = typeof(recipients[recipient].onStart) == "undefined" || recipients[recipient].onStart?true:false; // In case onStart wasn't defined we set it to true
+            if(!userIsOnPad && onStart){
+              console.debug("Emailing "+recipient +" about a new begin update");
+              server.send({
+                text:    "Your pad at "+urlToPads+padId +" is being edited, we're just emailing you let you know :)", 
+                from:    fromName+ "<"+fromEmail+">", 
+                to:      recipient,
+                subject: "Someone started editing "+padId
+              }, function(err, message) { console.log(err || message); });
+            }
+            else{
+              console.debug("Didn't send an email because user is already on the pad");
+            }
+          });
+        }
         cb(); // finish each user
       },
       function(err){
@@ -75,23 +78,26 @@ exports.notifyEnd = function(padId){
   db.get("emailSubscription:" + padId, function(err, recipients){ // get everyone we need to email
     if(recipients){
       async.forEach(Object.keys(recipients), function(recipient, cb){
-        // Is this recipient already on the pad?
-        exports.isUserEditingPad(padId, recipients[recipient].authorId, function(err,userIsOnPad){ // is the user already on the$
-          var onEnd = typeof(recipients[recipient].onEnd) == "undefined" || recipients[recipient].onEnd?true:false; // In case onEnd wasn't defined we set it to false
+        //avoid the 'pending' section
+        if (recipient != 'pending') {
+          // Is this recipient already on the pad?
+          exports.isUserEditingPad(padId, recipients[recipient].authorId, function(err,userIsOnPad){ // is the user already on the$
+            var onEnd = typeof(recipients[recipient].onEnd) == "undefined" || recipients[recipient].onEnd?true:false; // In case onEnd wasn't defined we set it to false
 
-          if(!userIsOnPad && onEnd){
-            console.debug("Emailing "+recipient +" about a pad finished being updated");
-            server.send({
-              text:    "Your pad at "+urlToPads+padId +" has finished being edited, we're just emailing you let you know :) \n\n  The changes look like this: \n" + changesToPad,
-              from:    fromName+ "<"+fromEmail+">",
-              to:      recipient,
-              subject: "Someone finished editing "+padId
-            }, function(err, message) { console.log(err || message); });
-          }
-          else{
-            console.debug("Didn't send an email because user is already on the pad");
-          }
-        });
+            if(!userIsOnPad && onEnd){
+              console.debug("Emailing "+recipient +" about a pad finished being updated");
+              server.send({
+                text:    "Your pad at "+urlToPads+padId +" has finished being edited, we're just emailing you let you know :) \n\n  The changes look like this: \n" + changesToPad,
+                from:    fromName+ "<"+fromEmail+">",
+                to:      recipient,
+                subject: "Someone finished editing "+padId
+              }, function(err, message) { console.log(err || message); });
+            }
+            else{
+              console.debug("Didn't send an email because user is already on the pad");
+            }
+          });
+        }
         cb(); // finish each user
       },
       function(err){
