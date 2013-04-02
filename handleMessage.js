@@ -1,9 +1,18 @@
  var  db = require('../../src/node/db/DB').db,
      API = require('../../src/node/db/API.js'),
    async = require('../../src/node_modules/async'),
+   email = require('emailjs'),
+randomString = require('../../src/static/js/pad_utils').randomString;
 settings = require('../../src/node/utils/Settings');
 
 var pluginSettings = settings.ep_email_notifications;
+var fromName = pluginSettings.fromName || "Etherpad";
+var fromEmail = pluginSettings.fromEmail || "pad@etherpad.org";
+var urlToPads = pluginSettings.urlToPads || "http://beta.etherpad.org/p/";
+var emailServer = pluginSettings.emailServer || {host:"127.0.0.1"};
+
+// Connect to the email server -- This might not be the ideal place to connect but it stops us having lots of connections 
+var server  = email.server.connect(emailServer);
 
 // When a new message comes in from the client - FML this is ugly
 exports.handleMessage = function(hook_name, context, callback){
@@ -138,20 +147,16 @@ exports.handleMessage = function(hook_name, context, callback){
  */
 exports.subscriptionEmail = function (context, email, emailFound, userInfo, padId, callback) {
   var validatesAsEmail = exports.checkEmailValidation(email);
+  var subscribeId = randomString(25);
 
   if(emailFound == false && validatesAsEmail){
     // Subscription -> Go for it
     console.debug ("Subscription: Wrote to the database and sent client a positive response ",context.message.data.userInfo.email);
 
-    exports.setAuthorEmail(
-      userInfo.userId,
-      userInfo,
-      callback
-    );
-
     exports.setAuthorEmailRegistered(
       userInfo,
       userInfo.userId,
+      subscribeId,
       padId
     );
 
@@ -164,6 +169,20 @@ exports.subscriptionEmail = function (context, email, emailFound, userInfo, padI
         }
       }
     });
+
+    // Send mail to user with the link for validation
+    server.send(
+      {
+        text:    "Please click on this link in order to validate your subscription to the pad " + padId + "\n" + urlToPads+padId + "/subscribe=" + subscribeId,
+        from:    fromName+ "<"+fromEmail+">",
+        to:      userInfo.email,
+        subject: "Email subscription confirmation for pad "+padId
+      }, 
+      function(err, message) { 
+        console.log(err || message); 
+      }
+    );
+
   } else if (!validatesAsEmail) {
     // Subscription -> failed coz mail malformed..  y'know in general fuck em!
     console.warn("Dropped email subscription due to malformed email address");
@@ -198,18 +217,16 @@ exports.subscriptionEmail = function (context, email, emailFound, userInfo, padI
  * UnsUbscription process
  */
 exports.unsubscriptionEmail = function (context, emailFound, userInfo, padId) {
+  var unsubscribeId = randomString(25);
+
   if(emailFound == true) {
     // Unsubscription -> Go for it
     console.debug ("Unsubscription: Remove from the database and sent client a positive response ",context.message.data.userInfo.email);
 
-    exports.unsetAuthorEmail(
-      userInfo.userId,
-      userInfo
-    );
-
     exports.unsetAuthorEmailRegistered(
       userInfo,
       userInfo.userId,
+      unsubscribeId,
       padId
     );
 
@@ -222,6 +239,19 @@ exports.unsubscriptionEmail = function (context, emailFound, userInfo, padId) {
         }
       }
     });
+
+    // Send mail to user with the link for validation
+    server.send(
+      {
+        text:    "Please click on this link in order to validate your unsubscription to the pad " + padId + "\n" + urlToPads+padId + "/unsubscribe=" + unsubscribeId,
+        from:    fromName+ "<"+fromEmail+">",
+        to:      userInfo.email,
+        subject: "Email unsubscription confirmation for pad "+padId
+      }, 
+      function(err, message) { 
+        console.log(err || message); 
+      }
+    );
   } else {
     // Unsubscription -> Send failed as email not found
     console.debug ("Unsubscription: Send client a negative response ",context.message.data.userInfo.email);
@@ -297,53 +327,53 @@ exports.checkEmailValidation = function (email) {
  * Database manipulation
  */
 
-// Updates the database with the email record
-exports.setAuthorEmail = function (author, userInfo, callback){
-  db.setSub("globalAuthor:" + author, ["email"], userInfo.email, callback);
-}
-
-// Write email and padId to the database
-exports.setAuthorEmailRegistered = function(userInfo, authorId, padId){
+// Write email, options, authorId and pendingId to the database
+exports.setAuthorEmailRegistered = function(userInfo, authorId, subscribeId, padId){
   var timestamp = new Date().getTime();
   var registered = {
       authorId: authorId,
       onStart: userInfo.email_onStart,
       onEnd: userInfo.email_onEnd,
+      subscribeId: subscribeId,
       timestamp: timestamp
   };
   console.debug("registered", registered, " to ", padId);
+
   // Here we have to basically hack a new value into the database, this isn't clean or polite.
   db.get("emailSubscription:" + padId, function(err, value){ // get the current value
-    if(!value){value = {};} // if an emailSubscription doesnt exist yet for this padId don't panic
-    value[userInfo.email] = registered; // add the registered values to the object
+    if(!value){
+      // if an emailSubscription doesnt exist yet for this padId don't panic
+      value = {"pending":{}};
+    } else if (!value['pending']) {
+      // if the pending section doesn't exist yet for this padId, we create it
+      value['pending'] = {};
+    }
+
+     // add the registered values to the pending section of the object
+    value['pending'][userInfo.email] = registered;
+
     console.warn("written to database");
     db.set("emailSubscription:" + padId, value); // stick it in the database
   });
 
 }
 
-// Updates the database by removing the email record for that AuthorId
-exports.unsetAuthorEmail = function (author, userInfo){
-  db.get("globalAuthor:" + author, function(err, value){ // get the current value
-
-    if (value['email'] == userInfo.email) {
-      // Remove the email option from the datas
-      delete value['email'];
-
-      // Write the modified datas back in the Db
-      db.set("globalAuthor:" + author, value);
-    }
-  });
-}
-
-// Remove email, options and padId from the database
-exports.unsetAuthorEmailRegistered = function(userInfo, authorId, padId){
+// Write email, authorId and pendingId to the database
+exports.unsetAuthorEmailRegistered = function(userInfo, authorId, unsubscribeId, padId){
+  var timestamp = new Date().getTime();
+  var registered = {
+      authorId: authorId,
+      unsubscribeId: unsubscribeId,
+      timestamp: timestamp
+  };
   console.debug("unregistered", userInfo.email, " to ", padId);
 
   db.get("emailSubscription:" + padId, function(err, value){ // get the current value
+    // if the pending section doesn't exist yet for this padId, we create it (this shouldn't happen)
+    if (!value['pending']) {value['pending'] = {};}
 
-    // remove the registered options from the object
-    delete value[userInfo.email];
+    // add the registered values to the pending section of the object
+    value['pending'][userInfo.email] = registered;
 
     // Write the modified datas back in the Db
     console.warn("written to database");

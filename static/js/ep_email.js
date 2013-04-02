@@ -253,9 +253,11 @@ Manage return msgs from server
 function showRegistrationSuccess(){
   $.gritter.add({
     // (string | mandatory) the heading of the notification
-    title: "Email subscribed",
+    title: "Email subscription",
     // (string | mandatory) the text inside the notification
-    text: "You will receive email when someone changes this pad.  If this is the first time you have requested emails you may need to confirm your email address"
+    text: "An email was sent to your address.<br />Click on the link in order to validate your subscription.",
+    // (int | optional) the time you want it to be alive for before fading out
+    time: 10000
   });
 }
 
@@ -287,9 +289,11 @@ function showAlreadyRegistered(type){
 function showUnregistrationSuccess(){
   $.gritter.add({
     // (string | mandatory) the heading of the notification
-    title: "Email unsubscribed",
+    title: "Email unsubscription",
     // (string | mandatory) the text inside the notification
-    text: "You won't receive anymore email when someone changes this pad."
+    text: "An email was sent to your address.<br />Click on the link in order to validate your unsubscription.",
+    // (int | optional) the time you want it to be alive for before fading out
+    time: 10000
   });
 }
 
