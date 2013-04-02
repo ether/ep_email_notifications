@@ -27,7 +27,7 @@ exports.registerRoute = function (hook_name, args, callback) {
             var timeDiffGood = false;
             var email = "your email";
 
-            if(userIds && userIds['pending']){
+            if(userIds && userIds['pending'] && userIds['pending'].length > 0){
               async.forEach(Object.keys(userIds['pending']), function(user){
                 var userInfo = userIds['pending'][user];
 
