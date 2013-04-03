@@ -33,6 +33,7 @@ NOTE: You will NOT receive an email if you(the author that registered their emai
 This plugin has for now an english and french translation.
 In case you would like to have it in another language, you can easily translate the few sentences and then contact us on irc (#etherpad-lite-dev on irc.freenode.net) or create a Pull-Request on the GitHub repository.
 You can find the sentences to translate in the ep_email_notifications/locales/ directory.
+Specials chars written in unicode (See https://fr.wikipedia.org/wiki/Table_des_caract%C3%A8res_Unicode_%280000-0FFF%29)
 
 # TODO
 * Clean up all code
