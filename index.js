@@ -1,6 +1,7 @@
-var db = require('ep_etherpad-lite/node/db/DB').db,
- async = require('../../src/node_modules/async'),
- settings = require('../../src/node/utils/Settings');
+  var db = require('ep_etherpad-lite/node/db/DB').db,
+      fs = require("fs"),
+   async = require('../../src/node_modules/async'),
+settings = require('../../src/node/utils/Settings');
 
 // Remove cache for this procedure
 db['dbSettings'].cache = 0;
@@ -222,69 +223,32 @@ function sendContent(res, args, action, padId, padURL, resultDb) {
   if (resultDb.foundInDb == true && resultDb.timeDiffGood == true) {
     // Pending data were found un Db and updated -> good
     resultMsg = "Success";
-    classResult = "good";
+    classResult = "validationGood";
+    if (action == 'subscribe') {
+      msgCause = "You will receive email when someone changes this pad.";
+    } else {
+      msgCause = "You won't receive anymore email when someone changes this pad.";
+    }
   } else if (resultDb.foundInDb == true) {
     // Pending data were found but older than a day -> fail
-    msgCause = "You have max 24h to click the link in your confirmation email.";
     resultMsg = "Too late!";
-    resultMsg += '<div>\n';
-    resultMsg += msgCause;
-    resultMsg += '</div>\n';
-    classResult = "bad";
+    classResult = "validationBad";
+    msgCause = "You have max 24h to click the link in your confirmation email.";
   } else {
     // Pending data weren't found in Db -> fail
+    resultMsg = "Fail";
+    classResult = "validationBad";
     msgCause = "We couldn't find any pending " + (action == 'subscribe'?'subscription':'unsubscription') + "<br />in our system with this Id.<br />Maybe you wait more than 24h before validating";
-    resultMsg = "Fail\n";
-    resultMsg += '<div>\n';
-    resultMsg += msgCause;
-    resultMsg += '</div>\n';
-    classResult = "bad";
   }
+
+  args.content = fs.readFileSync(__dirname + "/templates/response.ejs", 'utf-8');
+  args.content = args.content
+    .replace(/\<%action%\>/, actionMsg)
+    .replace(/\<%classResult%\>/, classResult)
+    .replace(/\<%result%\>/, resultMsg)
+    .replace(/\<%explanation%\>/, msgCause)
+    .replace(/\<%padUrl%\>/g, padURL);
 
   res.contentType("text/html; charset=utf-8");
-
-  args.content = '<html>\n';
-  args.content += '<head>\n';
-  args.content += '<meta charset="utf-8">\n';
-  args.content += '<title>Email Notifications Subscription</title>\n';
-//    args.content += '<link href="../../static/css/email_notifications.css" media="all" rel="stylesheet" type="text/css" />\n';
-  args.content += '<style>\n';
-  args.content += '.emailSubscription {\n';
-  args.content += '  width: 600px;\n';
-  args.content += '  margin: 0 auto;\n';
-  args.content += '  text-align: center;\n';
-  args.content += '  font-size: bigger;\n';
-  args.content += '  font-weight: bold;\n';
-  args.content += '  font-color: green;\n';
-  args.content += '}\n';
-  args.content += '.emailSubscription > div {\n';
-  args.content += '  border: solid 2px #333;\n';
-  args.content += '  padding: .3em;\n';
-  args.content += '  margin-bottom: .5em;\n';
-  args.content += '}\n';
-  args.content += '.good {\n';
-  args.content += '  background-color: green;\n';
-  args.content += '}\n';
-  args.content += '.bad {\n';
-  args.content += '  background-color: red;\n';
-  args.content += '}\n';
-  args.content += '</style>\n';
-  args.content += '</head>\n';
-  args.content += '<body style="text-align:center;">\n';
-  args.content += '<h1>Email notifications</h1>\n';
-  args.content += '<div class="emailSubscription">\n';
-  args.content += actionMsg + "\n";
-  args.content += '<div class="' + classResult + '">\n';
-  args.content += resultMsg;
-  if (action == 'subscribe' && classResult == 'good') {
-    args.content += "<div style='margin:0; padding:.2em; font-weight:normal;'>You will receive email when someone changes this pad.</div>"
-  } else if (action == 'unsubscribe' && classResult == 'good'){
-    args.content += "<div style='margin:0; padding:.2em; font-weight:normal;'>You won't receive anymore email when someone changes this pad.</div>";
-  }
-  args.content += '</div>\n';
-  args.content += 'Go to the pad: <a href="' + padURL + '">' + padURL + '</a>';
-  args.content += '</div>\n';
-  args.content += '</body>\n';
-  args.content += '</html>\n';
-  res.send(args.content); // Send it to the requester
+  res.send(args.content); // Send it to the requester*/
 }
