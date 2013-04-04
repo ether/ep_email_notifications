@@ -117,13 +117,11 @@ exports.handleClientMessage_emailNotificationGetUserInfo = function (hook, conte
 
 exports.handleClientMessage_emailNotificationMissingParams = function (hook, context) { // Settings are missing in settings.json file
   if (context.payload == true) {
-    var title = window._('ep_email_notifications.titleGritterError');
-    var msg = window._('ep_email_notifications.msgParamsMissing');
     $.gritter.add({
       // (string | mandatory) the heading of the notification
-      title: title,
+      title: window._('ep_email_notifications.titleGritterError'),
       // (string | mandatory) the text inside the notification
-      text: msg,
+      text: window._('ep_email_notifications.msgParamsMissing'),
       // (bool | optional) if you want it to fade out on its own or just sit there
       sticky: true
     });
