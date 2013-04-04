@@ -29,6 +29,9 @@ exports.handleMessage = function(hook_name, context, callback){
           }
         });
         console.warn("Settings for ep_email_notifications plugin are missing in settings.json file");
+
+        callback([null]); // don't run onto passing colorId or anything else to the message handler
+
       } else if (context.message.data.userInfo){
         if(context.message.data.userInfo.email){ // it contains email
           console.debug(context.message);
