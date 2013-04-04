@@ -6,21 +6,12 @@ if(typeof exports == 'undefined'){
 }
 
 exports.postAceInit = function(hook, context){
-  // Test if settings are good before continuing
+  // If panelDisplayLocation setting is missing, set default value
   if (typeof clientVars.panelDisplayLocation != "object") {
-    $.gritter.add({
-      // (string | mandatory) the heading of the notification
-      title: window._('ep_email_notifications.titleGritterError'),
-      // (string | mandatory) the text inside the notification
-      text: window._('ep_email_notifications.msgParamsMissing'),
-      // (bool | optional) if you want it to fade out on its own or just sit there
-      sticky: true
-    });
-
-    // Hide the notification menu in mysettings
-    $('#options-emailNotifications').parent().hide();
-
-    return false;
+    clientVars.panelDisplayLocation = {
+       mysettings: true,  // In the "mysettings" menu
+       popup: true
+    }
   }
 
   // If plugin settings set panel form in mysettings menu
@@ -115,6 +106,31 @@ exports.handleClientMessage_emailNotificationGetUserInfo = function (hook, conte
 
   if (result.formName == 'ep_email_form_mysettings') {
     $('.ep_email_settings').slideToggle();
+  }
+}
+
+exports.handleClientMessage_emailNotificationMissingParams = function (hook, context) { // Settings are missing in settings.json file
+  if (context.payload == true) {
+    $.gritter.add({
+      // (string | mandatory) the heading of the notification
+      title: window._('ep_email_notifications.titleGritterError'),
+      // (string | mandatory) the text inside the notification
+      text: window._('ep_email_notifications.msgParamsMissing'),
+      // (bool | optional) if you want it to fade out on its own or just sit there
+      sticky: true
+    });
+
+    // Hide the notification menu in mysettings
+    if (clientVars.panelDisplayLocation.mysettings == true && $('.ep_email_settings').is(":visible")) {
+      $('.ep_email_settings').slideToggle();
+      $('#options-emailNotifications').prop('checked', false);
+      $('#options-emailNotifications').parent().hide();
+    }
+
+    // Hide the popup if it is visible
+    if (clientVars.panelDisplayLocation.popup == true && $('#ep_email_form_popup').is(":visible")) {
+      $('#ep_email_form_popup').parent().parent().parent().hide();
+    }
   }
 }
 

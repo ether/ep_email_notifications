@@ -6,10 +6,13 @@ randomString = require('../../src/static/js/pad_utils').randomString;
 settings = require('../../src/node/utils/Settings');
 
 var pluginSettings = settings.ep_email_notifications;
+var areParamsOk = (pluginSettings)?true:false;
 var fromName = (pluginSettings && pluginSettings.fromName)?pluginSettings.fromName:"Etherpad";
 var fromEmail = (pluginSettings && pluginSettings.fromEmail)?pluginSettings.fromEmail:"pad@etherpad.org";
 var urlToPads = (pluginSettings && pluginSettings.urlToPads)?pluginSettings.urlToPads:"http://beta.etherpad.org/p/";
 var emailServer = (pluginSettings && pluginSettings.emailServer)?pluginSettings.emailServer:{host:"127.0.0.1"};
+
+if (areParamsOk == false) console.warn("Settings for ep_email_notifications plugin are missing in settings.json file");
 
 // Connect to the email server -- This might not be the ideal place to connect but it stops us having lots of connections 
 var server  = email.server.connect(emailServer);
@@ -18,7 +21,15 @@ var server  = email.server.connect(emailServer);
 exports.handleMessage = function(hook_name, context, callback){
   if (context.message && context.message.data){
     if (context.message.data.type == 'USERINFO_UPDATE' ) { // if it's a request to update an authors email
-      if (context.message.data.userInfo){
+      if (areParamsOk == false) {
+        context.client.json.send({ type: "COLLABROOM",
+          data:{
+            type: "emailNotificationMissingParams",
+            payload: true
+          }
+        });
+        console.warn("Settings for ep_email_notifications plugin are missing in settings.json file");
+      } else if (context.message.data.userInfo){
         if(context.message.data.userInfo.email){ // it contains email
           console.debug(context.message);
 

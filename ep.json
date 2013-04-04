@@ -15,7 +15,8 @@
         "postAceInit":"ep_email_notifications/static/js/ep_email:postAceInit",
         "handleClientMessage_emailSubscriptionSuccess":"ep_email_notifications/static/js/ep_email",
         "handleClientMessage_emailUnsubscriptionSuccess":"ep_email_notifications/static/js/ep_email",
-        "handleClientMessage_emailNotificationGetUserInfo":"ep_email_notifications/static/js/ep_email"
+        "handleClientMessage_emailNotificationGetUserInfo":"ep_email_notifications/static/js/ep_email",
+        "handleClientMessage_emailNotificationMissingParams":"ep_email_notifications/static/js/ep_email"
       }
     }
   ]
