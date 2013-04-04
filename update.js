@@ -8,6 +8,7 @@ settings = require('../../src/node/utils/Settings');
 
 // Settings -- EDIT THESE IN settings.json not here..
 var pluginSettings = settings.ep_email_notifications;
+var areParamsOk = (pluginSettings)?true:false;
 var checkFrequency = (pluginSettings && pluginSettings.checkFrequency)?pluginSettings.checkFrequency:60000; // 10 seconds
 var staleTime = (pluginSettings && pluginSettings.staleTime)?pluginSettings.staleTime:300000; // 5 minutes
 var fromName = (pluginSettings && pluginSettings.fromName)?pluginSettings.fromName:"Etherpad";
@@ -22,6 +23,8 @@ var timers = {};
 var server  = email.server.connect(emailServer);
 
 exports.padUpdate = function (hook_name, _pad) {
+  if (areParamsOk == false) return false;
+
   var pad = _pad.pad;
   var padId = pad.id;
   exports.sendUpdates(padId);

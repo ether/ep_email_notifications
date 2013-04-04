@@ -3,7 +3,7 @@
 , "ep_email_notifications.titleGritterUnsubscr": "Email unsubscription"
 , "ep_email_notifications.headerGritterSubscr": "(Receive an email when someone modifies this pad)"
 , "ep_email_notifications.msgOptionsNotChecked": "You need to check at least one of the two options from 'Send a mail when someone..'"
-, "ep_email_notifications.msgParamsMissing": "Some settings for the 'email_Notifications' plugin are missing.<br />Please contact your administrator."
+, "ep_email_notifications.msgParamsMissing": "Settings for the 'email_Notifications' plugin are missing.<br />Please contact your administrator."
 , "ep_email_notifications.msgEmailMalformed": "The email address is malformed"
 , "ep_email_notifications.msgAlreadySubscr": "You are already registered for emails for this pad"
 , "ep_email_notifications.msgUnsubscrNotExisting": "This email address is not registered for this pad"

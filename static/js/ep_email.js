@@ -13,8 +13,8 @@ exports.postAceInit = function(hook, context){
       title: window._('ep_email_notifications.titleGritterError'),
       // (string | mandatory) the text inside the notification
       text: window._('ep_email_notifications.msgParamsMissing'),
-      // (int | optional) the time you want it to be alive for before fading out
-      time: 10000,
+      // (bool | optional) if you want it to fade out on its own or just sit there
+      sticky: true
     });
 
     // Hide the notification menu in mysettings
