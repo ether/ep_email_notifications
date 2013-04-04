@@ -174,7 +174,7 @@ function askClientToEnterEmail(){
     // (string | mandatory) the heading of the notification
     title: window._('ep_email_notifications.titleGritterSubscr'),
     // (string | mandatory) the text inside the notification
-    text: "<p>" + window._('ep_email_notifications.headerGritterSubscr') + "</p>" + formContent,
+    text: "<p class='ep_email_form_popup_header'>" + window._('ep_email_notifications.headerGritterSubscr') + "</p>" + formContent,
     // (bool | optional) if you want it to fade out on its own or just sit there
     sticky: true,
     // (int | optional) the time you want it to be alive for before fading out
