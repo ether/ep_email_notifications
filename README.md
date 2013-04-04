@@ -1,5 +1,5 @@
 # Description
-This plugin allows users to subscribe to pads and receive email updates when a pad is being modified.  You can modify the frequency.  This plugin is very much in alpha stage and has a lot of things TODO (See TODO).
+This plugin allows users to subscribe to pads and receive email updates when a pad is being modified.  You can modify the frequency.  This plugin is still in early stage and has things TODO (See TODO).
 
 # Source code
 On Github : https://github.com/JohnMcLear/ep_email_notifications

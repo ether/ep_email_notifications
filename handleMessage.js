@@ -366,7 +366,7 @@ exports.setAuthorEmailRegistered = function(userInfo, authorId, subscribeId, pad
      // add the registered values to the pending section of the object
     value['pending'][userInfo.email] = registered;
 
-    console.warn("written to database");
+    // Write the modified datas back in the Db
     db.set("emailSubscription:" + padId, value); // stick it in the database
   });
 
@@ -390,7 +390,6 @@ exports.unsetAuthorEmailRegistered = function(userInfo, authorId, unsubscribeId,
     value['pending'][userInfo.email] = registered;
 
     // Write the modified datas back in the Db
-    console.warn("written to database");
     db.set("emailSubscription:" + padId, value);
   });
 }
