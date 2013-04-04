@@ -64,6 +64,9 @@ exports.handleClientMessage_emailSubscriptionSuccess = function(hook, context){ 
   } else {
     showRegistrationSuccess();
 
+    // Add cookie to say an email is registered for this pad
+    cookie.setPref(pad.getPadId() + "email", "true");
+
     if (clientVars.panelDisplayLocation.mysettings == true && $('.ep_email_settings').is(":visible")) {
       $('.ep_email_settings').slideToggle();
       $('#options-emailNotifications').prop('checked', false);
@@ -81,6 +84,9 @@ exports.handleClientMessage_emailUnsubscriptionSuccess = function(hook, context)
     $('#' + context.payload.formName + ' [name=ep_email]').select();
   } else {
     showUnregistrationSuccess();
+
+    // Set cookie to say no email is registered for this pad
+    cookie.setPref(pad.getPadId() + "email", "false");
 
     if (clientVars.panelDisplayLocation.mysettings == true && $('.ep_email_settings').is(":visible")) {
       $('.ep_email_settings').slideToggle();
@@ -239,7 +245,6 @@ function sendEmailToServer(formName){
   message.userInfo.userId = userId;
   if(email){
     pad.collabClient.sendMessage(message);
-    cookie.setPref(message.padId+"email", "true");
   }
 }
 
