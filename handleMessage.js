@@ -6,10 +6,10 @@ randomString = require('../../src/static/js/pad_utils').randomString;
 settings = require('../../src/node/utils/Settings');
 
 var pluginSettings = settings.ep_email_notifications;
-var fromName = pluginSettings.fromName || "Etherpad";
-var fromEmail = pluginSettings.fromEmail || "pad@etherpad.org";
-var urlToPads = pluginSettings.urlToPads || "http://beta.etherpad.org/p/";
-var emailServer = pluginSettings.emailServer || {host:"127.0.0.1"};
+var fromName = (pluginSettings && pluginSettings.fromName)?pluginSettings.fromName:"Etherpad";
+var fromEmail = (pluginSettings && pluginSettings.fromEmail)?pluginSettings.fromEmail:"pad@etherpad.org";
+var urlToPads = (pluginSettings && pluginSettings.urlToPads)?pluginSettings.urlToPads:"http://beta.etherpad.org/p/";
+var emailServer = (pluginSettings && pluginSettings.emailServer)?pluginSettings.emailServer:{host:"127.0.0.1"};
 
 // Connect to the email server -- This might not be the ideal place to connect but it stops us having lots of connections 
 var server  = email.server.connect(emailServer);

@@ -8,12 +8,12 @@ settings = require('../../src/node/utils/Settings');
 
 // Settings -- EDIT THESE IN settings.json not here..
 var pluginSettings = settings.ep_email_notifications;
-var checkFrequency = pluginSettings.checkFrequency || 60000; // 10 seconds
-var staleTime = pluginSettings.staleTime || 300000; // 5 minutes
-var fromName = pluginSettings.fromName || "Etherpad";
-var fromEmail = pluginSettings.fromEmail || "pad@etherpad.org";
-var urlToPads = pluginSettings.urlToPads || "http://beta.etherpad.org/p/";
-var emailServer = pluginSettings.emailServer || {host:"127.0.0.1"};
+var checkFrequency = (pluginSettings && pluginSettings.checkFrequency)?pluginSettings.checkFrequency:60000; // 10 seconds
+var staleTime = (pluginSettings && pluginSettings.staleTime)?pluginSettings.staleTime:300000; // 5 minutes
+var fromName = (pluginSettings && pluginSettings.fromName)?pluginSettings.fromName:"Etherpad";
+var fromEmail = (pluginSettings && pluginSettings.fromEmail)?pluginSettings.fromEmail:"pad@etherpad.org";
+var urlToPads = (pluginSettings && pluginSettings.urlToPads)?pluginSettings.urlToPads:"http://beta.etherpad.org/p/";
+var emailServer = (pluginSettings && pluginSettings.emailServer)?pluginSettings.emailServer:{host:"127.0.0.1"};
 
 // A timer object we maintain to control how we send emails
 var timers = {};
