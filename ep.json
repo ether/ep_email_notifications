@@ -6,11 +6,17 @@
         "padUpdate": "ep_email_notifications/update",
         "handleMessage": "ep_email_notifications/handleMessage",
         "eejsBlock_scripts": "ep_email_notifications/client",
-        "eejsBlock_embedPopup": "ep_email_notifications/client:eejsBlock_embedPopup"
+        "eejsBlock_mySettings": "ep_email_notifications/client:eejsBlock_mySettings",
+        "eejsBlock_styles": "ep_email_notifications/client:eejsBlock_styles",
+        "clientVars": "ep_email_notifications/client:clientVars",
+        "expressCreateServer" : "ep_email_notifications/index:registerRoute"
       },
       "client_hooks": {
         "postAceInit":"ep_email_notifications/static/js/ep_email:postAceInit",
-        "handleClientMessage_emailSubscriptionSuccess":"ep_email_notifications/static/js/ep_email"
+        "handleClientMessage_emailSubscriptionSuccess":"ep_email_notifications/static/js/ep_email",
+        "handleClientMessage_emailUnsubscriptionSuccess":"ep_email_notifications/static/js/ep_email",
+        "handleClientMessage_emailNotificationGetUserInfo":"ep_email_notifications/static/js/ep_email",
+        "handleClientMessage_emailNotificationMissingParams":"ep_email_notifications/static/js/ep_email"
       }
     }
   ]

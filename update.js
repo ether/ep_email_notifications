@@ -8,12 +8,13 @@ settings = require('../../src/node/utils/Settings');
 
 // Settings -- EDIT THESE IN settings.json not here..
 var pluginSettings = settings.ep_email_notifications;
-var checkFrequency = pluginSettings.checkFrequency || 60000; // 10 seconds
-var staleTime = pluginSettings.staleTime || 300000; // 5 minutes
-var fromName = pluginSettings.fromName || "Etherpad";
-var fromEmail = pluginSettings.fromEmail || "pad@etherpad.org";
-var urlToPads = pluginSettings.urlToPads || "http://beta.etherpad.org/p/";
-var emailServer = pluginSettings.emailServer || {host:"127.0.0.1"};
+var areParamsOk = (pluginSettings)?true:false;
+var checkFrequency = (pluginSettings && pluginSettings.checkFrequency)?pluginSettings.checkFrequency:60000; // 10 seconds
+var staleTime = (pluginSettings && pluginSettings.staleTime)?pluginSettings.staleTime:300000; // 5 minutes
+var fromName = (pluginSettings && pluginSettings.fromName)?pluginSettings.fromName:"Etherpad";
+var fromEmail = (pluginSettings && pluginSettings.fromEmail)?pluginSettings.fromEmail:"pad@etherpad.org";
+var urlToPads = (pluginSettings && pluginSettings.urlToPads)?pluginSettings.urlToPads:"http://beta.etherpad.org/p/";
+var emailServer = (pluginSettings && pluginSettings.emailServer)?pluginSettings.emailServer:{host:"127.0.0.1"};
 
 // A timer object we maintain to control how we send emails
 var timers = {};
@@ -22,6 +23,8 @@ var timers = {};
 var server  = email.server.connect(emailServer);
 
 exports.padUpdate = function (hook_name, _pad) {
+  if (areParamsOk == false) return false;
+
   var pad = _pad.pad;
   var padId = pad.id;
   exports.sendUpdates(padId);
@@ -43,21 +46,25 @@ exports.notifyBegin = function(padId){
   db.get("emailSubscription:" + padId, function(err, recipients){ // get everyone we need to email
     if(recipients){
       async.forEach(Object.keys(recipients), function(recipient, cb){
-        // Is this recipient already on the pad?
-        exports.isUserEditingPad(padId, recipients[recipient].authorId, function(err,userIsOnPad){ // is the user already on the pad?
-          if(!userIsOnPad){ 
-            console.debug("Emailing "+recipient +" about a new begin update");
-            server.send({
-              text:    "Your pad at "+urlToPads+padId +" is being edited, we're just emailing you let you know :)\n\n -- This plugin is in alpha state, can you help fund it's development? https://github.com/johnmclear/ep_email_notifications", 
-              from:    fromName+ "<"+fromEmail+">", 
-              to:      recipient,
-              subject: "Someone started editing "+padId
-            }, function(err, message) { console.log(err || message); });
-          }
-          else{
-            console.debug("Didn't send an email because user is already on the pad");
-          }
-        });
+        //avoid the 'pending' section
+        if (recipient != 'pending') {
+          // Is this recipient already on the pad?
+          exports.isUserEditingPad(padId, recipients[recipient].authorId, function(err,userIsOnPad){ // is the user already on the pad?
+            var onStart = typeof(recipients[recipient].onStart) == "undefined" || recipients[recipient].onStart?true:false; // In case onStart wasn't defined we set it to true
+            if(!userIsOnPad && onStart){
+              console.debug("Emailing "+recipient +" about a new begin update");
+              server.send({
+                text:    "Your pad at "+urlToPads+padId +" is being edited, we're just emailing you let you know :)", 
+                from:    fromName+ "<"+fromEmail+">", 
+                to:      recipient,
+                subject: "Someone started editing "+padId
+              }, function(err, message) { console.log(err || message); });
+            }
+            else{
+              console.debug("Didn't send an email because user is already on the pad");
+            }
+          });
+        }
         cb(); // finish each user
       },
       function(err){
@@ -74,21 +81,26 @@ exports.notifyEnd = function(padId){
   db.get("emailSubscription:" + padId, function(err, recipients){ // get everyone we need to email
     if(recipients){
       async.forEach(Object.keys(recipients), function(recipient, cb){
-        // Is this recipient already on the pad?
-        exports.isUserEditingPad(padId, recipients[recipient].authorId, function(err,userIsOnPad){ // is the user already on the$
-          if(!userIsOnPad){
-            console.debug("Emailing "+recipient +" about a pad finished being updated");
-            server.send({
-              text:    "Your pad at "+urlToPads+padId +" has finished being edited, we're just emailing you let you know :) \n\n  The changes look like this: \n" + changesToPad,
-              from:    fromName+ "<"+fromEmail+">",
-              to:      recipient,
-              subject: "Someone finished editing "+padId
-            }, function(err, message) { console.log(err || message); });
-          }
-          else{
-            console.debug("Didn't send an email because user is already on the pad");
-          }
-        });
+        //avoid the 'pending' section
+        if (recipient != 'pending') {
+          // Is this recipient already on the pad?
+          exports.isUserEditingPad(padId, recipients[recipient].authorId, function(err,userIsOnPad){ // is the user already on the$
+            var onEnd = typeof(recipients[recipient].onEnd) == "undefined" || recipients[recipient].onEnd?true:false; // In case onEnd wasn't defined we set it to false
+
+            if(!userIsOnPad && onEnd){
+              console.debug("Emailing "+recipient +" about a pad finished being updated");
+              server.send({
+                text:    "Your pad at "+urlToPads+padId +" has finished being edited, we're just emailing you let you know :) \n\n  The changes look like this: \n" + changesToPad,
+                from:    fromName+ "<"+fromEmail+">",
+                to:      recipient,
+                subject: "Someone finished editing "+padId
+              }, function(err, message) { console.log(err || message); });
+            }
+            else{
+              console.debug("Didn't send an email because user is already on the pad");
+            }
+          });
+        }
         cb(); // finish each user
       },
       function(err){

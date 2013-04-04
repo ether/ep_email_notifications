@@ -1,0 +1,64 @@
+.ep_email_settings {
+  display: none;
+  padding: 0.2em 0.2em 0.2em 0.5em;
+}
+
+.ep_email_buttons {
+  padding:5px;
+}
+
+.ep_email_checkbox {
+  margin-left:0.3em;
+}
+
+.ep_email_input {
+  padding:.2em;
+  width:177px;
+}
+
+.ep_email_form_popup_header {
+  font-size:x-small;
+}
+
+#ep_email_form_popup .ep_email_buttons {
+  margin-top: .5em;
+}
+
+#ep_email_form_popup .ep_email_checkbox {
+  margin-top: .2em;
+}
+
+#ep_email_form_popup .ep_email_input {
+  margin: .3em 0;
+  width:95%;
+}
+/* (un)subscription validation page */
+.validationTitle {
+  margin: 0 auto;
+  width: 600px;
+  text-align: center;
+}
+.validationEmailSubscription {
+  width: 600px;
+  margin: 0 auto;
+  text-align: center;
+  font-size: bigger;
+  font-weight: bold;
+  font-color: green;
+}
+.validationEmailSubscription > div {
+  border: solid 2px #333;
+  padding: .3em;
+  margin: .5em 0;
+}
+.validationEmailSubscription > div > div {
+  margin:0;
+  padding:.2em;
+  font-weight:normal;
+}
+.validationGood {
+  background-color: #CCFF66;
+}
+.validationBad {
+  background-color: #FF3300;
+}
