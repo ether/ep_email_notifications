@@ -101,17 +101,21 @@ exports.handleClientMessage_emailUnsubscriptionSuccess = function(hook, context)
 
 exports.handleClientMessage_emailNotificationGetUserInfo = function (hook, context) { // return the existing options for this userId
   var result = context.payload;
-  if(result.success == true){ // If data found, set the options with them
-    $('[name=ep_email]').val(result.email);
-    $('[name=ep_email_onStart]').prop('checked', result.onStart);
-    $('[name=ep_email_onEnd]').prop('checked', result.onEnd);
-  } else {  // No data found, set the options to default values
-    $('[name=ep_email_onStart]').prop('checked', true);
-    $('[name=ep_email_onEnd]').prop('checked', false);
-  }
 
-  if (result.formName == 'ep_email_form_mysettings') {
-    $('.ep_email_settings').slideToggle();
+  // Only use first data from the server. (case when 2 emails subscribed for the same pad & authorId)
+  if ($('.ep_email_settings').is(':visible') == false) {
+    if(result.success == true){ // If data found, set the options with them
+      $('[name=ep_email]').val(result.email);
+      $('[name=ep_email_onStart]').prop('checked', result.onStart);
+      $('[name=ep_email_onEnd]').prop('checked', result.onEnd);
+    } else {  // No data found, set the options to default values
+      $('[name=ep_email_onStart]').prop('checked', true);
+      $('[name=ep_email_onEnd]').prop('checked', false);
+    }
+
+    if (result.formName == 'ep_email_form_mysettings') {
+      $('.ep_email_settings').slideToggle();
+    }
   }
 }
 
