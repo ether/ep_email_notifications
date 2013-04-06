@@ -22,7 +22,6 @@ exports.postAceInit = function(hook, context){
     $('#options-emailNotifications').on('click', function() {
       if (!optionsAlreadyRecovered) {
         getDataForUserId('ep_email_form_mysettings');
-        optionsAlreadyRecovered = true;
       } else {
         $('.ep_email_settings').slideToggle();
       }
@@ -103,7 +102,7 @@ exports.handleClientMessage_emailNotificationGetUserInfo = function (hook, conte
   var result = context.payload;
 
   // Only use first data from the server. (case when 2 emails subscribed for the same pad & authorId)
-  if ($('.ep_email_settings').is(':visible') == false) {
+  if (optionsAlreadyRecovered == false) {
     if(result.success == true){ // If data found, set the options with them
       $('[name=ep_email]').val(result.email);
       $('[name=ep_email_onStart]').prop('checked', result.onStart);
@@ -116,6 +115,8 @@ exports.handleClientMessage_emailNotificationGetUserInfo = function (hook, conte
     if (result.formName == 'ep_email_form_mysettings') {
       $('.ep_email_settings').slideToggle();
     }
+
+    optionsAlreadyRecovered = true;
   }
 }
 
@@ -183,8 +184,6 @@ function askClientToEnterEmail(){
     text: "<p class='ep_email_form_popup_header'>" + window._('ep_email_notifications.headerGritterSubscr') + "</p>" + formContent,
     // (bool | optional) if you want it to fade out on its own or just sit there
     sticky: true,
-    // (int | optional) the time you want it to be alive for before fading out
-    time: 2000,
     // (string | optional) add a class name to the gritter msg
     class_name: "emailNotificationsPopupForm",
     // the function to bind to the form
@@ -206,8 +205,14 @@ function askClientToEnterEmail(){
         checkAndSend(e);
       });
 
-      getDataForUserId('ep_email_form_popup');
-      optionsAlreadyRecovered = true;
+      if (optionsAlreadyRecovered == false) {
+        getDataForUserId('ep_email_form_popup');
+      } else {
+        // Get datas from form in mysettings menu
+        $('#ep_email_form_popup [name=ep_email]').val($('#ep_email_form_mysettings [name=ep_email]').val());
+        $('#ep_email_form_popup [name=ep_email_onStart]').prop('checked', $('#ep_email_form_mysettings [name=ep_email_onStart]').prop('checked'));
+        $('#ep_email_form_popup [name=ep_email_onEnd]').prop('checked', $('#ep_email_form_mysettings [name=ep_email_onEnd]').prop('checked'));
+      }
     }
   });
 }
