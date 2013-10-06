@@ -22,7 +22,6 @@ exports.postAceInit = function(hook, context){
     $('#options-emailNotifications').on('click', function() {
       if (!optionsAlreadyRecovered) {
         getDataForUserId('ep_email_form_mysettings');
-        optionsAlreadyRecovered = true;
       } else {
         $('.ep_email_settings').slideToggle();
       }
@@ -101,17 +100,23 @@ exports.handleClientMessage_emailUnsubscriptionSuccess = function(hook, context)
 
 exports.handleClientMessage_emailNotificationGetUserInfo = function (hook, context) { // return the existing options for this userId
   var result = context.payload;
-  if(result.success == true){ // If data found, set the options with them
-    $('[name=ep_email]').val(result.email);
-    $('[name=ep_email_onStart]').prop('checked', result.onStart);
-    $('[name=ep_email_onEnd]').prop('checked', result.onEnd);
-  } else {  // No data found, set the options to default values
-    $('[name=ep_email_onStart]').prop('checked', true);
-    $('[name=ep_email_onEnd]').prop('checked', false);
-  }
 
-  if (result.formName == 'ep_email_form_mysettings') {
-    $('.ep_email_settings').slideToggle();
+  // Only use first data from the server. (case when 2 emails subscribed for the same pad & authorId)
+  if (optionsAlreadyRecovered == false) {
+    if(result.success == true){ // If data found, set the options with them
+      $('[name=ep_email]').val(result.email);
+      $('[name=ep_email_onStart]').prop('checked', result.onStart);
+      $('[name=ep_email_onEnd]').prop('checked', result.onEnd);
+    } else {  // No data found, set the options to default values
+      $('[name=ep_email_onStart]').prop('checked', true);
+      $('[name=ep_email_onEnd]').prop('checked', false);
+    }
+
+    if (result.formName == 'ep_email_form_mysettings') {
+      $('.ep_email_settings').slideToggle();
+    }
+
+    optionsAlreadyRecovered = true;
   }
 }
 
@@ -123,7 +128,9 @@ exports.handleClientMessage_emailNotificationMissingParams = function (hook, con
       // (string | mandatory) the text inside the notification
       text: window._('ep_email_notifications.msgParamsMissing'),
       // (bool | optional) if you want it to fade out on its own or just sit there
-      sticky: true
+      sticky: true,
+      // (string | optional) add a class name to the gritter msg
+      class_name: "emailNotificationsParamsMissing"
     });
 
     // Hide the notification menu in mysettings
@@ -177,8 +184,8 @@ function askClientToEnterEmail(){
     text: "<p class='ep_email_form_popup_header'>" + window._('ep_email_notifications.headerGritterSubscr') + "</p>" + formContent,
     // (bool | optional) if you want it to fade out on its own or just sit there
     sticky: true,
-    // (int | optional) the time you want it to be alive for before fading out
-    time: 2000,
+    // (string | optional) add a class name to the gritter msg
+    class_name: "emailNotificationsPopupForm",
     // the function to bind to the form
     after_open: function(e){
       $('#ep_email_form_popup').submit(function(){
@@ -198,8 +205,14 @@ function askClientToEnterEmail(){
         checkAndSend(e);
       });
 
-      getDataForUserId('ep_email_form_popup');
-      optionsAlreadyRecovered = true;
+      if (optionsAlreadyRecovered == false) {
+        getDataForUserId('ep_email_form_popup');
+      } else {
+        // Get datas from form in mysettings menu
+        $('#ep_email_form_popup [name=ep_email]').val($('#ep_email_form_mysettings [name=ep_email]').val());
+        $('#ep_email_form_popup [name=ep_email_onStart]').prop('checked', $('#ep_email_form_mysettings [name=ep_email_onStart]').prop('checked'));
+        $('#ep_email_form_popup [name=ep_email_onEnd]').prop('checked', $('#ep_email_form_mysettings [name=ep_email_onEnd]').prop('checked'));
+      }
     }
   });
 }
@@ -219,7 +232,9 @@ function checkAndSend(e) {
       // (string | mandatory) the heading of the notification
       title: window._('ep_email_notifications.titleGritterError'),
       // (string | mandatory) the text inside the notification
-      text: window._('ep_email_notifications.msgOptionsNotChecked')
+      text: window._('ep_email_notifications.msgOptionsNotChecked'),
+      // (string | optional) add a class name to the gritter msg
+      class_name: "emailNotificationsSubscrOptionsMissing"
     });
   } else if (email) {
     $('#' + formName).submit();
@@ -278,7 +293,9 @@ function showRegistrationSuccess(){
     // (string | mandatory) the text inside the notification
     text: window._('ep_email_notifications.msgSubscrSuccess'),
     // (int | optional) the time you want it to be alive for before fading out
-    time: 10000
+    time: 10000,
+    // (string | optional) add a class name to the gritter msg
+    class_name: "emailNotificationsSubscrResponseGood"
   });
 }
 
@@ -299,7 +316,9 @@ function showAlreadyRegistered(type){
     // (string | mandatory) the text inside the notification
     text: msg,
     // (int | optional) the time you want it to be alive for before fading out
-    time: 7000
+    time: 7000,
+    // (string | optional) add a class name to the gritter msg
+    class_name: "emailNotificationsSubscrResponseBad"
   });
 
 }
@@ -314,7 +333,9 @@ function showUnregistrationSuccess(){
     // (string | mandatory) the text inside the notification
     text: window._('ep_email_notifications.msgUnsubscrSuccess'),
     // (int | optional) the time you want it to be alive for before fading out
-    time: 10000
+    time: 10000,
+    // (string | optional) add a class name to the gritter msg
+    class_name: "emailNotificationsUnsubscrResponseGood"
   });
 }
 
@@ -328,7 +349,9 @@ function showWasNotRegistered(){
     // (string | mandatory) the text inside the notification
     text: window._('ep_email_notifications.msgUnsubscrNotExisting'),
     // (int | optional) the time you want it to be alive for before fading out
-    time: 7000
+    time: 7000,
+    // (string | optional) add a class name to the gritter msg
+    class_name: "emailNotificationsUnsubscrResponseBad"
   });
 
 }

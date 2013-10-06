@@ -17,7 +17,7 @@ exports.eejsBlock_styles = function (hook_name, args, cb) {
 
 exports.clientVars = function(hook, context, callback) {
   var pluginSettings = settings.ep_email_notifications;
-  var panelDisplayLocation = (pluginSettings && pluginSettings.panelDisplayLocation)?pluginSettings.panelDisplayLocation:"undefiend";
+  var panelDisplayLocation = (pluginSettings && pluginSettings.panelDisplayLocation)?pluginSettings.panelDisplayLocation:"undefined";
   // return the setting to the clientVars, sending the value
   return callback({ "panelDisplayLocation": panelDisplayLocation });
 };
