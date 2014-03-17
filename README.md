@@ -6,25 +6,30 @@ On Github : https://github.com/JohnMcLear/ep_email_notifications
 
 # Installation
 Make sure an SMTP gateway is installed IE postfix
+
 Configure SPF and RDNS records to ensure proper mail flow <-- Search online
+
 Copy/Edit the below to your settings.json
+
 Connect to a pad, Click on the Share/Embed link and enter in your email address.
+
 Open that pad in ANOTHER BROWSER then begin modifying, you should receive an email when the pad has begun editing and once the pad has gone stale (when everyone stops editing it and a time period passes).
+
 NOTE: You will NOT receive an email if you(the author that registered their email) are currently on or editing that pad!
 
 ```
  "ep_email_notifications" : {
-    panelDisplayLocation: { // Where you want to have the subscription panel
-      mysettings: true,  // In the "mysettings" menu
-      popup: true        // A popup that pop in the bottom right corner of the pad after 10 seconds
+    "panelDisplayLocation": { // Where you want to have the subscription panel - Adding this to break the plugin?
+      "mysettings": "true",  // In the "mysettings" menu
+      "popup": "true"        // A popup that pop in the bottom right corner of the pad after 10 seconds
     },
-    checkFrequency: 6000, // checkFrequency = How frequently(milliseconds) to check for pad updates -- Move me to the settings file
-    staleTime: 30000,  // staleTime = How stale(milliseconds) does a pad need to be before notifying subscribers?  Move me to settings
-    fromName: "Etherpad SETTINGS FILE!",
-    fromEmail: "pad@etherpad.org",
-    urlToPads: "http://beta.etherpad.org/p/", // urlToPads = The URL to your pads note the trailing /
-    emailServer: { // See https://github.com/eleith/emailjs for settings
-      host: "127.0.0.1"
+    "checkFrequency": "6000", // checkFrequency = How frequently(milliseconds) to check for pad updates -- Move me to the settings file
+    "staleTime": "30000",  // staleTime = How stale(milliseconds) does a pad need to be before notifying subscribers?  Move me to settings
+    "fromName": "Etherpad SETTINGS FILE!",
+    "fromEmail": "pad@etherpad.org",
+    "urlToPads": "http://beta.etherpad.org/p/", // urlToPads = The URL to your pads note the trailing /
+    "emailServer": { // See https://github.com/eleith/emailjs for settings
+      "host": "127.0.0.1"
     }
   }
 ```
