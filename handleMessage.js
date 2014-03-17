@@ -162,7 +162,6 @@ exports.handleMessage = function(hook_name, context, callback){
 exports.subscriptionEmail = function (context, email, emailFound, userInfo, padId, callback) {
   var validatesAsEmail = exports.checkEmailValidation(email);
   var subscribeId = randomString(25);
-
   if(emailFound == false && validatesAsEmail){
     // Subscription -> Go for it
     console.debug ("Subscription: Wrote to the database and sent client a positive response ",context.message.data.userInfo.email);
@@ -329,12 +328,12 @@ exports.sendUserInfo = function (context, emailFound, email, userInfo) {
  * Function to check if an email is valid
  */
 exports.checkEmailValidation = function (email) {
-  var Validator = require('validator').Validator;
-  var validator = new Validator();
-  validator.error = function() {
+  var validator = require('validator');
+  if(validator.isEmail(email)){
+    return true;
+  }else{
     return false;
-  };
-  return validator.check(email).isEmail();
+  }
 }
 
 /**
