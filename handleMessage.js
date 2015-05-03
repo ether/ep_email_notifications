@@ -39,6 +39,8 @@ exports.handleMessage = function(hook_name, context, callback){
           // does email (Un)Subscription already exist for this email address?
           db.get("emailSubscription:"+context.message.data.padId, function(err, userIds){
 
+            console.log("emailSubscription");
+
             var alreadyExists = false;
 
             if(userIds){
@@ -173,6 +175,7 @@ exports.subscriptionEmail = function (context, email, emailFound, userInfo, padI
       padId
     );
 
+    console.warn("emailSubSucc");
     context.client.json.send({ type: "COLLABROOM",
       data:{
         type: "emailSubscriptionSuccess",
@@ -298,18 +301,19 @@ exports.sendUserInfo = function (context, emailFound, email, userInfo) {
 
   if (emailFound == true) {
     // We send back the options associated to this userId
-    context.client.json.send({ type: "COLLABROOM",
-      data:{
-        type: "emailNotificationGetUserInfo",
-        payload: {
-          email: email,
-          onStart: onStart,
-          onEnd: onEnd,
-          formName: context.message.data.userInfo.formName,
-          success:true
-        }
+    var msg = {
+      type: "emailNotificationGetUserInfo",
+      payload: {
+        email: email,
+        onStart: onStart,
+        onEnd: onEnd,
+        formName: context.message.data.userInfo.formName,
+        success:true
       }
-    });
+    }
+
+    context.client.json.send({ type: "COLLABROOM", data: msg });
+
   } else {
     // No options set for this userId
     context.client.json.send({ type: "COLLABROOM",

@@ -8,7 +8,7 @@ db['dbSettings'].cache = 0;
 
 exports.registerRoute = function (hook_name, args, callback) {
   // Catching (un)subscribe addresses
-  args.app.get('/p/*/(un){0,1}subscribe=*', function(req, res) {
+  args.app.get(/\/p/*/(un){0,1}subscribe=\/(.*)/, function(req, res) {
     var fullURL = req.protocol + "://" + req.get('host') + req.url;
     var path=req.url.split("/");
     var padId=path[2];

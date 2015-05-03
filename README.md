@@ -19,9 +19,9 @@ NOTE: You will NOT receive an email if you(the author that registered their emai
 
 ```
  "ep_email_notifications" : {
-    "panelDisplayLocation": { // Where you want to have the subscription panel - Adding this to break the plugin?
-      "mysettings": "true",  // In the "mysettings" menu
-      "popup": "true"        // A popup that pop in the bottom right corner of the pad after 10 seconds
+    "panelDisplayLocation": { // Where you want to have the subscription panel
+      "mysettings": true,
+      "popup": true
     },
     "checkFrequency": "6000", // checkFrequency = How frequently(milliseconds) to check for pad updates -- Move me to the settings file
     "staleTime": "30000",  // staleTime = How stale(milliseconds) does a pad need to be before notifying subscribers?  Move me to settings
