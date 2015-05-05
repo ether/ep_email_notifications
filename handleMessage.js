@@ -28,9 +28,8 @@ exports.handleMessage = function(hook_name, context, callback){
             payload: true
           }
         });
-        console.warn("Settings for ep_email_notifications plugin are missing in settings.json file");
-
-        callback([null]); // don't run onto passing colorId or anything else to the message handler
+        console.error("Settings for ep_email_notifications plugin are missing in settings.json file");
+        return callback([null]); // don't run onto passing colorId or anything else to the message handler
 
       } else if (context.message.data.userInfo){
         if(context.message.data.userInfo.email){ // it contains email
@@ -39,7 +38,7 @@ exports.handleMessage = function(hook_name, context, callback){
           // does email (Un)Subscription already exist for this email address?
           db.get("emailSubscription:"+context.message.data.padId, function(err, userIds){
 
-            console.log("emailSubscription");
+            console.debug("emailSubscription");
 
             var alreadyExists = false;
 
@@ -103,7 +102,7 @@ exports.handleMessage = function(hook_name, context, callback){
 
           }); // close db get
 
-          callback([null]); // don't run onto passing colorId or anything else to the message handler
+          return callback([null]); // don't run onto passing colorId or anything else to the message handler
 
         }
       }
@@ -149,8 +148,7 @@ exports.handleMessage = function(hook_name, context, callback){
               );
             }
           });
-
-          callback([null]);
+          return callback([null]);
         }
       }
     }
@@ -175,7 +173,7 @@ exports.subscriptionEmail = function (context, email, emailFound, userInfo, padI
       padId
     );
 
-    console.warn("emailSubSucc");
+    console.debug("emailSubSucc");
     context.client.json.send({ type: "COLLABROOM",
       data:{
         type: "emailSubscriptionSuccess",
@@ -195,13 +193,13 @@ exports.subscriptionEmail = function (context, email, emailFound, userInfo, padI
         subject: "Email subscription confirmation for pad "+padId
       }, 
       function(err, message) { 
-        console.log(err || message); 
+        console.error(err || message); 
       }
     );
 
   } else if (!validatesAsEmail) {
     // Subscription -> failed coz mail malformed..  y'know in general fuck em!
-    console.warn("Dropped email subscription due to malformed email address");
+    console.debug("Dropped email subscription due to malformed email address");
     context.client.json.send({ type: "COLLABROOM",
       data:{
         type: "emailSubscriptionSuccess",
@@ -265,7 +263,7 @@ exports.unsubscriptionEmail = function (context, emailFound, userInfo, padId) {
         subject: "Email unsubscription confirmation for pad "+padId
       }, 
       function(err, message) { 
-        console.log(err || message); 
+        console.error(err || message); 
       }
     );
   } else {
