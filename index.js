@@ -10,7 +10,7 @@ exports.registerRoute = function (hook_name, args, callback) {
   // Catching (un)subscribe addresses
   args.app.get(/\/p\/.*\/(un){0,1}subscribe=(.*)/, function(req, res) {
     var fullURL = req.protocol + "://" + req.get('host') + req.url;
-    var path=req.url.split("/");
+    var path = decodeURI(req.url).split("/");
     var padId=path[2];
     var param = path[3].split("=");
     var action = param[0];
@@ -247,7 +247,7 @@ function sendContent(res, args, action, padId, padURL, resultDb) {
     .replace(/\<%classResult%\>/, classResult)
     .replace(/\<%result%\>/, resultMsg)
     .replace(/\<%explanation%\>/, msgCause)
-    .replace(/\<%padUrl%\>/g, padURL);
+    .replace(/\<%padUrl%\>/g, encodeURI(padURL));
 
   res.contentType("text/html; charset=utf-8");
   res.send(args.content); // Send it to the requester*/

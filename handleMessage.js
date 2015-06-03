@@ -1,7 +1,7 @@
  var  db = require('../../src/node/db/DB').db,
      API = require('../../src/node/db/API.js'),
    async = require('../../src/node_modules/async'),
-   email = require('emailjs'),
+   email = require('emailjs'),subscriptionEmail
 randomString = require('../../src/static/js/pad_utils').randomString;
 settings = require('../../src/node/utils/Settings');
 
@@ -187,7 +187,7 @@ exports.subscriptionEmail = function (context, email, emailFound, userInfo, padI
     // Send mail to user with the link for validation
     server.send(
       {
-        text:    "Please click on this link in order to validate your subscription to the pad " + padId + "\n" + urlToPads+padId + "/subscribe=" + subscribeId,
+        text:    "Please click on this link in order to validate your subscription to the pad " + padId + "\n" + urlToPads + encodeURI(padId) + "/subscribe=" + subscribeId,
         from:    fromName+ "<"+fromEmail+">",
         to:      userInfo.email,
         subject: "Email subscription confirmation for pad "+padId
