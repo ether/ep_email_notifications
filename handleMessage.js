@@ -1,7 +1,7 @@
  var  db = require('../../src/node/db/DB').db,
      API = require('../../src/node/db/API.js'),
    async = require('../../src/node_modules/async'),
-   email = require('emailjs'),subscriptionEmail
+   email = require('emailjs'),
 randomString = require('../../src/static/js/pad_utils').randomString;
 settings = require('../../src/node/utils/Settings');
 
