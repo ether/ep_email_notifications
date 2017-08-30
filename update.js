@@ -4,7 +4,8 @@
    async = require('../../src/node_modules/async'),
    check = require('validator').check,
    email = require('emailjs'),
-settings = require('../../src/node/utils/Settings');
+settings = require('../../src/node/utils/Settings'),
+    util = require('util');
 
 // Settings -- EDIT THESE IN settings.json not here..
 var pluginSettings = settings.ep_email_notifications;
@@ -21,6 +22,8 @@ var timers = {};
 
 // Connect to the email server -- This might not be the ideal place to connect but it stops us having lots of connections 
 var server  = email.server.connect(emailServer);
+
+var emailFooter = "\nYou can unsubscribe from these emails in the pad's Settings window.\n";
 
 exports.padUpdate = function (hook_name, _pad) {
   if (areParamsOk == false) return false;
@@ -41,6 +44,11 @@ exports.padUpdate = function (hook_name, _pad) {
   }
 };
 
+padUrl = function(padId, fmt) {
+  fmt = fmt || "%s";
+  return util.format(fmt, urlToPads + padId);
+}
+
 exports.notifyBegin = function(padId){
   console.warn("Getting pad email stuff for "+padId);
   db.get("emailSubscription:" + padId, function(err, recipients){ // get everyone we need to email
@@ -54,7 +62,7 @@ exports.notifyBegin = function(padId){
             if(!userIsOnPad && onStart){
               console.debug("Emailing "+recipient +" about a new begin update");
               server.send({
-                text:    "Your pad at "+urlToPads+padId +" is being edited, we're just emailing you let you know :)", 
+                text:    "This pad is now being edited:\n" + padUrl(padId, "  <%s>\n") + emailFooter,
                 from:    fromName+ "<"+fromEmail+">", 
                 to:      recipient,
                 subject: "Someone started editing "+padId
@@ -75,8 +83,7 @@ exports.notifyBegin = function(padId){
 }
 
 exports.notifyEnd = function(padId){
-  // get the modified contents...
-  var changesToPad = "Functionality does not exist";
+  // TODO: get the modified contents to include in the email
 
   db.get("emailSubscription:" + padId, function(err, recipients){ // get everyone we need to email
     if(recipients){
@@ -90,7 +97,7 @@ exports.notifyEnd = function(padId){
             if(!userIsOnPad && onEnd){
               console.debug("Emailing "+recipient +" about a pad finished being updated");
               server.send({
-                text:    "Your pad at "+urlToPads+padId +" has finished being edited, we're just emailing you let you know :) \n\n  The changes look like this: \n" + changesToPad,
+                text:    "This pad is done being edited:\n" + padUrl(padId, "  <%s>\n") + emailFooter,
                 from:    fromName+ "<"+fromEmail+">",
                 to:      recipient,
                 subject: "Someone finished editing "+padId
