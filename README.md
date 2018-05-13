@@ -40,6 +40,18 @@ In case you would like to have it in another language, you can easily translate 
 You can find the sentences to translate in the ep_email_notifications/locales/ directory.
 Specials chars written in unicode (See https://fr.wikipedia.org/wiki/Table_des_caract%C3%A8res_Unicode_%280000-0FFF%29)
 
+# License
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License.  You may obtain a copy
+of the License at <http://www.apache.org/licenses/LICENSE-2.0>.
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+License for the specific language governing permissions and limitations
+under the License.
+
 # TODO
 * Clean up all code
 
