@@ -16,7 +16,7 @@ console.warn("HERE");
     var param = path[3].split("=");
     var action = param[0];
     var actionId = param[1];
-    var padURL = req.protocol + "://" + req.get('host') + "/p/" +padId;
+    var padURL = settings.ep_email_notifications.urlToPads + padId;
 
     async.waterfall(
       [
