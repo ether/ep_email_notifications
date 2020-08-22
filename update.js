@@ -7,6 +7,8 @@
 settings = require('../../src/node/utils/Settings'),
     util = require('util');
 
+var SMTPClient = email.SMTPClient;
+
 // Settings -- EDIT THESE IN settings.json not here..
 var pluginSettings = settings.ep_email_notifications;
 var areParamsOk = (pluginSettings)?true:false;
@@ -21,7 +23,9 @@ var emailServer = (pluginSettings && pluginSettings.emailServer)?pluginSettings.
 var timers = {};
 
 // Connect to the email server -- This might not be the ideal place to connect but it stops us having lots of connections 
-var server  = email.server.connect(emailServer);
+// var server = email.server.connect(emailServer);
+
+const server = new SMTPClient(emailServer);
 
 var emailFooter = "\nYou can unsubscribe from these emails in the pad's Settings window.\n";
 

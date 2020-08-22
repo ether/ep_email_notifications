@@ -15,9 +15,8 @@
     }
   ],
   "dependencies": {
-    "emailjs": "0.2.7",
-    "buffertools": ">= 1.0.8",
-    "validator": ">= 0.4.21"
+    "emailjs": "3.3.0",
+    "validator": "13.1.1"
   },
   "engines": {
     "node": ">= 0.4.1"

@@ -5,6 +5,8 @@
 randomString = require('../../src/static/js/pad_utils').randomString;
 settings = require('../../src/node/utils/Settings');
 
+var SMTPClient = email.SMTPClient;
+
 var pluginSettings = settings.ep_email_notifications;
 var areParamsOk = (pluginSettings)?true:false;
 var fromName = (pluginSettings && pluginSettings.fromName)?pluginSettings.fromName:"Etherpad";
@@ -15,7 +17,7 @@ var emailServer = (pluginSettings && pluginSettings.emailServer)?pluginSettings.
 if (areParamsOk == false) console.warn("Settings for ep_email_notifications plugin are missing in settings.json file");
 
 // Connect to the email server -- This might not be the ideal place to connect but it stops us having lots of connections 
-var server  = email.server.connect(emailServer);
+const server = new SMTPClient(emailServer);
 
 // When a new message comes in from the client - FML this is ugly
 exports.handleMessage = function(hook_name, context, callback){
