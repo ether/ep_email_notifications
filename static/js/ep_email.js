@@ -124,7 +124,7 @@ exports.handleClientMessage_emailNotificationMissingParams = function (hook, con
   if (context.payload == true) {
     $.gritter.add({
       // (string | mandatory) the heading of the notification
-      title: window._('ep_email_notifications.titleGritterError'),
+      title: "× " + window._('ep_email_notifications.titleGritterError'),
       // (string | mandatory) the text inside the notification
       text: window._('ep_email_notifications.msgParamsMissing'),
       // (bool | optional) if you want it to fade out on its own or just sit there
@@ -179,7 +179,7 @@ function askClientToEnterEmail(){
 
   $.gritter.add({
     // (string | mandatory) the heading of the notification
-    title: window._('ep_email_notifications.titleGritterSubscr'),
+    title: "× " + window._('ep_email_notifications.titleGritterSubscr'),
     // (string | mandatory) the text inside the notification
     text: "<p class='ep_email_form_popup_header'>" + window._('ep_email_notifications.headerGritterSubscr') + "</p>" + formContent,
     // (bool | optional) if you want it to fade out on its own or just sit there
@@ -230,7 +230,7 @@ function checkAndSend(e) {
       && !$('#' + formName + ' [name=ep_email_onEnd]').is(':checked')) {
     $.gritter.add({
       // (string | mandatory) the heading of the notification
-      title: window._('ep_email_notifications.titleGritterError'),
+      title: "× " + window._('ep_email_notifications.titleGritterError'),
       // (string | mandatory) the text inside the notification
       text: window._('ep_email_notifications.msgOptionsNotChecked'),
       // (string | optional) add a class name to the gritter msg
@@ -289,7 +289,7 @@ Manage return msgs from server
 function showRegistrationSuccess(){
   $.gritter.add({
     // (string | mandatory) the heading of the notification
-    title: window._('ep_email_notifications.titleGritterSubscr'),
+    title: "× " + window._('ep_email_notifications.titleGritterSubscr'),
     // (string | mandatory) the text inside the notification
     text: window._('ep_email_notifications.msgSubscrSuccess'),
     // (int | optional) the time you want it to be alive for before fading out
@@ -312,7 +312,7 @@ function showAlreadyRegistered(type){
   }
   $.gritter.add({
     // (string | mandatory) the heading of the notification
-    title: window._('ep_email_notifications.titleGritterSubscr'),
+    title: "× " + window._('ep_email_notifications.titleGritterSubscr'),
     // (string | mandatory) the text inside the notification
     text: msg,
     // (int | optional) the time you want it to be alive for before fading out
@@ -329,7 +329,7 @@ function showAlreadyRegistered(type){
 function showUnregistrationSuccess(){
   $.gritter.add({
     // (string | mandatory) the heading of the notification
-    title: window._('ep_email_notifications.titleGritterUnsubscr'),
+    title: "× " + window._('ep_email_notifications.titleGritterUnsubscr'),
     // (string | mandatory) the text inside the notification
     text: window._('ep_email_notifications.msgUnsubscrSuccess'),
     // (int | optional) the time you want it to be alive for before fading out
@@ -345,7 +345,7 @@ function showUnregistrationSuccess(){
 function showWasNotRegistered(){
   $.gritter.add({
     // (string | mandatory) the heading of the notification
-    title: window._('ep_email_notifications.titleGritterUnsubscr'),
+    title: "× " + window._('ep_email_notifications.titleGritterUnsubscr'),
     // (string | mandatory) the text inside the notification
     text: window._('ep_email_notifications.msgUnsubscrNotExisting'),
     // (int | optional) the time you want it to be alive for before fading out
