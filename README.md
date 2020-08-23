@@ -58,3 +58,6 @@ under the License.
 # FUTURE VERSIONS TODO
 * v2 - Get the modified contents from the API HTML diff and append that to the Email and make the email from the server HTML not plain text
 * v2 - Keep a record of when a user was last on a pad
+
+# FAiling tests
+Tests fail due to notifications coming in front of objects IE color picker test.  This is something that needs fixing..
