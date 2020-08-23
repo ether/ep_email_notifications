@@ -1,4 +1,5 @@
 describe("email notifications plugin", function(){
+
   //create a new pad before each test run
   beforeEach(function(cb){
     helper.newPad(cb);
@@ -44,6 +45,7 @@ describe("email notifications plugin", function(){
 
   // Second, test with a malformed email
   it("makes test subscription with malformed email address", function(done) {
+
     var chrome$ = helper.padChrome$;
 
     //click on the settings button to make settings visible
@@ -63,6 +65,10 @@ describe("email notifications plugin", function(){
         return chrome$(".gritter-item").is(':visible') == true;
       })
       .done(function(){
+        var clientVars = $('iframe')[0].contentWindow.window.clientVars;
+        if(clientVars.ep_email_missing){ // don't test if settings aren't set
+          return done();
+        }
         expect(chrome$(".emailNotificationsSubscrResponseBad").is(':visible')).to.be(true);
         done();
       });
@@ -89,6 +95,11 @@ describe("email notifications plugin", function(){
         return chrome$(".gritter-item").is(':visible') == true;
       })
       .done(function(){
+        var clientVars = $('iframe')[0].contentWindow.window.clientVars;
+        if(clientVars.ep_email_missing){ // don't test if settings aren't set
+          return done();
+        }
+
         expect(chrome$(".emailNotificationsUnsubscrResponseBad").is(':visible')).to.be(true);
 
         done();
@@ -117,6 +128,11 @@ describe("email notifications plugin", function(){
         return chrome$(".gritter-item").is(':visible') == true;
       })
       .done(function(){
+        var clientVars = $('iframe')[0].contentWindow.window.clientVars;
+        if(clientVars.ep_email_missing){ // don't test if settings aren't set
+          return done();
+        }
+
         expect(chrome$(".emailNotificationsSubscrResponseGood").is(':visible')).to.be(true);
 
         done();

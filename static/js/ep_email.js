@@ -121,6 +121,8 @@ exports.handleClientMessage_emailNotificationGetUserInfo = function (hook, conte
 }
 
 exports.handleClientMessage_emailNotificationMissingParams = function (hook, context) { // Settings are missing in settings.json file
+  clientVars.ep_email_missing = true;
+
   if (context.payload == true) {
     $.gritter.add({
       // (string | mandatory) the heading of the notification
