@@ -50,7 +50,7 @@ exports.postAceInit = function(hook, context){
   }
 
   // If settings set popup panel form to true, show it
-  if (clientVars.panelDisplayLocation.popup == true) {
+  if (clientVars.panelDisplayLocation.popup == true && !clientVars.ep_email_missing) {
     // after 10 seconds if we dont already have an email for this author then prompt them
     setTimeout(function(){initPopupForm()},10000);
   }
