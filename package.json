@@ -31,5 +31,9 @@
   "dist": {
     "shasum": "1f32eee4c8d5f3903c549b5a7985afc0053ed451"
   },
-  "_from": "ep_email_notifications"
+  "_from": "ep_email_notifications",
+  "funding": {
+    "type": "individual",
+    "url": "http://etherpad.org/"
+  }
 }
