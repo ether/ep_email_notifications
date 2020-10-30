@@ -1,7 +1,7 @@
 {
   "name": "ep_email_notifications",
   "description": "Subscribe to a pad and receive an email when someone edits your pad",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "author": {
     "name": "John Mclear",
     "email": "john@mclear.co.uk",
