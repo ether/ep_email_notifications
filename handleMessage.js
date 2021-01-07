@@ -56,7 +56,7 @@ exports.handleMessage = function (hook_name, context, callback) {
                         alreadyExists,
                         context.message.data.userInfo,
                         context.message.data.padId,
-                        callback,
+                        callback
                     );
                   } else if (context.message.data.userInfo.email_option == 'unsubscribe') {
                     // Unsubscription process
@@ -64,7 +64,7 @@ exports.handleMessage = function (hook_name, context, callback) {
                         context,
                         alreadyExists,
                         context.message.data.userInfo,
-                        context.message.data.padId,
+                        context.message.data.padId
                     );
                   }
                 }
@@ -86,7 +86,7 @@ exports.handleMessage = function (hook_name, context, callback) {
                     alreadyExists,
                     context.message.data.userInfo,
                     context.message.data.padId,
-                    callback,
+                    callback
                 );
               } else if (context.message.data.userInfo.email_option == 'unsubscribe') {
                 // Unsubscription process
@@ -94,7 +94,7 @@ exports.handleMessage = function (hook_name, context, callback) {
                     context,
                     alreadyExists,
                     context.message.data.userInfo,
-                    context.message.data.padId,
+                    context.message.data.padId
                 );
               }
             }
@@ -123,7 +123,7 @@ exports.handleMessage = function (hook_name, context, callback) {
                       context,
                       userIdFound,
                       user,
-                      userIds[user],
+                      userIds[user]
                   );
                 }
                 cb();
@@ -140,7 +140,7 @@ exports.handleMessage = function (hook_name, context, callback) {
                   context,
                   userIdFound,
                   '',
-                  '',
+                  ''
               );
             }
           });
@@ -166,7 +166,7 @@ exports.subscriptionEmail = function (context, email, emailFound, userInfo, padI
         userInfo,
         userInfo.userId,
         subscribeId,
-        padId,
+        padId
     );
 
     console.debug('emailSubSucc');
@@ -189,7 +189,7 @@ exports.subscriptionEmail = function (context, email, emailFound, userInfo, padI
         },
         (err, message) => {
           console.error(err || message);
-        },
+        }
     );
   } else if (!validatesAsEmail) {
     // Subscription -> failed coz mail malformed..  y'know in general fuck em!
@@ -233,7 +233,7 @@ exports.unsubscriptionEmail = function (context, emailFound, userInfo, padId) {
         userInfo,
         userInfo.userId,
         unsubscribeId,
-        padId,
+        padId
     );
 
     context.client.json.send({type: 'COLLABROOM',
@@ -255,7 +255,7 @@ exports.unsubscriptionEmail = function (context, emailFound, userInfo, padId) {
         },
         (err, message) => {
           console.error(err || message);
-        },
+        }
     );
   } else {
     // Unsubscription -> Send failed as email not found

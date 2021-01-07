@@ -51,26 +51,26 @@ exports.registerRoute = function (hook_name, args, callback) {
                     // Subscription process
                       setAuthorEmail(
                           userInfo,
-                          user,
+                          user
                       );
 
                       setAuthorEmailRegistered(
                           userIds,
                           userInfo,
                           user,
-                          padId,
+                          padId
                       );
                     } else if (action == 'unsubscribe' && timeDiffGood == true) {
                     // Unsubscription process
                       unsetAuthorEmail(
                           userInfo,
-                          user,
+                          user
                       );
 
                       unsetAuthorEmailRegistered(
                           userIds,
                           user,
-                          padId,
+                          padId
                       );
                     }
 
@@ -108,7 +108,7 @@ exports.registerRoute = function (hook_name, args, callback) {
           if (err != null) {
             console.error('Callback async.series: Err -> ', err, ' / results -> ', results);
           }
-        },
+        }
     );
   });
 
