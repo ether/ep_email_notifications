@@ -16,6 +16,7 @@ exports.eejsBlock_mySettings = (hookName, args, cb) => {
 exports.eejsBlock_styles = (hookName, args, cb) => {
   const url = '../static/plugins/ep_email_notifications/static/css/email_notifications.css';
   args.content += `<link href="${url}" rel="stylesheet">`;
+  cb();
 };
 
 exports.clientVars = (hook, context, callback) => {

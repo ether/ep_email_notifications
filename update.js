@@ -4,7 +4,6 @@
 // someone begins editing and when someone finishes.
 const db = require('ep_etherpad-lite/node/db/DB').db;
 const API = require('ep_etherpad-lite/node/db/API.js');
-const async = require('ep_etherpad-lite/src/node_modules/async');
 const email = require('emailjs');
 const settings = require('ep_etherpad-lite/node/utils/Settings');
 const util = require('util');
@@ -65,7 +64,7 @@ exports.notifyBegin = (padId) => {
   console.warn(`Getting pad email stuff for ${padId}`);
   db.get(`emailSubscription:${padId}`, (err, recipients) => { // get everyone we need to email
     if (recipients) {
-      async.forEach(Object.keys(recipients), (recipient, cb) => {
+      for (const recipient of Object.keys(recipients)) {
         // avoid the 'pending' section
         if (recipient !== 'pending') {
           // Is this recipient already on the pad?
@@ -90,11 +89,7 @@ exports.notifyBegin = (padId) => {
                 }
               });
         }
-        cb(); // finish each user
-      },
-      (err) => {
-        // do some error handling..
-      });
+      }
     }
   });
 };
@@ -104,7 +99,7 @@ exports.notifyEnd = (padId) => {
 
   db.get(`emailSubscription:${padId}`, (err, recipients) => { // get everyone we need to email
     if (recipients) {
-      async.forEach(Object.keys(recipients), (recipient, cb) => {
+      for (const recipient of Object.keys(recipients)) {
         // avoid the 'pending' section
         if (recipient !== 'pending') {
           // Is this recipient already on the pad?
@@ -128,11 +123,7 @@ exports.notifyEnd = (padId) => {
                 }
               });
         }
-        cb(); // finish each user
-      },
-      (err) => {
-        // do some error handling..
-      });
+      }
     }
   });
 };
