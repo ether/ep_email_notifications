@@ -19,7 +19,7 @@
     "validator": "13.1.1"
   },
   "engines": {
-    "node": ">= 0.4.1"
+    "node": ">=10.17.1"
   },
   "repository": {
     "type": "git",

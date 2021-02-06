@@ -1,16 +1,17 @@
+'use strict';
+
 const db = require('ep_etherpad-lite/node/db/DB').db;
 const fs = require('fs');
-const async = require('../../src/node_modules/async');
-const settings = require('../../src/node/utils/Settings');
+const async = require('ep_etherpad-lite/node_modules/async');
+const settings = require('ep_etherpad-lite/node/utils/Settings');
 
 // Remove cache for this procedure
 db.dbSettings.cache = 0;
 
-exports.registerRoute = function (hook_name, args, callback) {
+exports.registerRoute = (hookName, args, callback) => {
   // Catching (un)subscribe addresses
   args.app.get(/\/p\/.*\/(un){0,1}subscribe=(.*)/, (req, res) => {
     console.warn('HERE');
-    const fullURL = `${req.protocol}://${req.get('host')}${req.url}`;
     const path = decodeURI(req.url).split('/');
     const padId = path[2];
     const param = path[3].split('=');
@@ -20,7 +21,7 @@ exports.registerRoute = function (hook_name, args, callback) {
 
     async.waterfall(
         [
-          function (cb) {
+          (cb) => {
           // Is the (un)subscription valid (exists & not older than 24h)
             db.get(`emailSubscription:${padId}`, (err, userIds) => {
               let foundInDb = false;
@@ -37,7 +38,7 @@ exports.registerRoute = function (hook_name, args, callback) {
                   const userInfo = userIds.pending[user];
 
                   //  If we have Id int the Db, then we are good ot really unsubscribe the user
-                  if (userInfo[`${action}Id`] == actionId) {
+                  if (userInfo[`${action}Id`] === actionId) {
                     console.debug('emailSubscription:', user, 'found in DB:', userInfo);
 
                     foundInDb = true;
@@ -47,7 +48,7 @@ exports.registerRoute = function (hook_name, args, callback) {
                     const timeDiff = new Date().getTime() - userInfo.timestamp;
                     timeDiffGood = timeDiff < 1000 * 60 * 60 * 24;
 
-                    if (action == 'subscribe' && timeDiffGood == true) {
+                    if (action === 'subscribe' && timeDiffGood === true) {
                     // Subscription process
                       setAuthorEmail(
                           userInfo,
@@ -60,7 +61,7 @@ exports.registerRoute = function (hook_name, args, callback) {
                           user,
                           padId
                       );
-                    } else if (action == 'unsubscribe' && timeDiffGood == true) {
+                    } else if (action === 'unsubscribe' && timeDiffGood === true) {
                     // Unsubscription process
                       unsetAuthorEmail(
                           userInfo,
@@ -92,13 +93,13 @@ exports.registerRoute = function (hook_name, args, callback) {
             });
           },
 
-          function (resultDb, cb) {
+          (resultDb, cb) => {
           // Create and send the output message
             sendContent(res, args, action, padId, padURL, resultDb);
             cb(null, resultDb);
           },
 
-          function (resultDb, cb) {
+          (resultDb, cb) => {
           // Take a moment to clean all obsolete pending data
             cleanPendingData(padId);
             cb(null, resultDb);
@@ -120,12 +121,12 @@ exports.registerRoute = function (hook_name, args, callback) {
  */
 
 // Updates the database with the email record
-setAuthorEmail = function (userInfo, email) {
+const setAuthorEmail = (userInfo, email) => {
   db.setSub(`globalAuthor:${userInfo.authorId}`, ['email'], email);
 };
 
 // Write email and padId to the database
-setAuthorEmailRegistered = function (userIds, userInfo, email, padId) {
+const setAuthorEmailRegistered = (userIds, userInfo, email, padId) => {
   console.debug('setAuthorEmailRegistered: Initial userIds:', userIds);
   const timestamp = new Date().getTime();
   const registered = {
@@ -149,9 +150,9 @@ setAuthorEmailRegistered = function (userIds, userInfo, email, padId) {
 };
 
 // Updates the database by removing the email record for that AuthorId
-unsetAuthorEmail = function (userInfo, email) {
+const unsetAuthorEmail = (userInfo, email) => {
   db.get(`globalAuthor:${userInfo.authorId}`, (err, value) => { // get the current value
-    if (value.email == email) {
+    if (value.email === email) {
       // Remove the email option from the datas
       delete value.email;
 
@@ -162,7 +163,7 @@ unsetAuthorEmail = function (userInfo, email) {
 };
 
 // Remove email, options and padId from the database
-unsetAuthorEmailRegistered = function (userIds, email, padId) {
+const unsetAuthorEmailRegistered = (userIds, email, padId) => {
   console.debug('unsetAuthorEmailRegistered: initial userIds:', userIds);
   // remove the registered options from the object
   delete userIds[email];
@@ -180,7 +181,7 @@ unsetAuthorEmailRegistered = function (userIds, email, padId) {
 /**
  * We take a moment to remove too old pending (un)subscription
  */
-cleanPendingData = function (padId) {
+const cleanPendingData = (padId) => {
   let modifiedData; let
     areDataModified = false;
 
@@ -192,7 +193,7 @@ cleanPendingData = function (padId) {
         const timeDiff = new Date().getTime() - userIds.pending[user].timestamp;
         const timeDiffGood = timeDiff < 1000 * 60 * 60 * 24;
 
-        if (timeDiffGood == false) {
+        if (timeDiffGood === false) {
           delete modifiedData.pending[user];
 
           areDataModified = true;
@@ -200,38 +201,40 @@ cleanPendingData = function (padId) {
       });
     }
 
-    if (areDataModified == true) {
+    if (areDataModified === true) {
       // Write the modified datas back in the Db
       db.set(`emailSubscription:${padId}`, modifiedData);
     }
 
-    console.debug('cleanPendingData: Modified userIds:', modifiedData, ' / areDataModified:', areDataModified);
+    console.debug(
+        `cleanPendingData: Modified userIds: ${modifiedData} / ${areDataModified}`);
   });
 };
 
 /**
  * Create html output with the status of the process
  */
-function sendContent(res, args, action, padId, padURL, resultDb) {
-  console.debug('starting sendContent: args ->', action, ' / ', padId, ' / ', padURL, ' / ', resultDb);
-
-  if (action == 'subscribe') {
-    var actionMsg = `Subscribing '${resultDb.email}' to pad ${padId}`;
+const sendContent = (res, args, action, padId, padURL, resultDb) => {
+  console.debug(
+      'starting sendContent: args ->', action, ' / ', padId, ' / ', padURL, ' / ', resultDb);
+  let actionMsg;
+  if (action === 'subscribe') {
+    actionMsg = `Subscribing '${resultDb.email}' to pad ${padId}`;
   } else {
-    var actionMsg = `Unsubscribing '${resultDb.email}' from pad ${padId}`;
+    actionMsg = `Unsubscribing '${resultDb.email}' from pad ${padId}`;
   }
   let msgCause, resultMsg, classResult;
 
-  if (resultDb.foundInDb == true && resultDb.timeDiffGood == true) {
+  if (resultDb.foundInDb === true && resultDb.timeDiffGood === true) {
     // Pending data were found un Db and updated -> good
     resultMsg = 'Success';
     classResult = 'validationGood';
-    if (action == 'subscribe') {
+    if (action === 'subscribe') {
       msgCause = 'You will receive email when someone changes this pad.';
     } else {
       msgCause = "You won't receive anymore email when someone changes this pad.";
     }
-  } else if (resultDb.foundInDb == true) {
+  } else if (resultDb.foundInDb === true) {
     // Pending data were found but older than a day -> fail
     resultMsg = 'Too late!';
     classResult = 'validationBad';
@@ -240,17 +243,20 @@ function sendContent(res, args, action, padId, padURL, resultDb) {
     // Pending data weren't found in Db -> fail
     resultMsg = 'Fail';
     classResult = 'validationBad';
-    msgCause = `We couldn't find any pending ${action == 'subscribe' ? 'subscription' : 'unsubscription'}<br />in our system with this Id.<br />Maybe you wait more than 24h before validating`;
+    msgCause = `We couldn't find any pending
+        ${action === 'subscribe' ? 'subscription' : 'unsubscription'}<br />
+        in our system with this Id.<br />
+        Maybe you wait more than 24h before validating`;
   }
 
   args.content = fs.readFileSync(`${__dirname}/templates/response.ejs`, 'utf-8');
   args.content = args.content
-      .replace(/\<%action%\>/, actionMsg)
-      .replace(/\<%classResult%\>/, classResult)
-      .replace(/\<%result%\>/, resultMsg)
-      .replace(/\<%explanation%\>/, msgCause)
-      .replace(/\<%padUrl%\>/g, encodeURI(padURL));
+      .replace(/<%action%>/, actionMsg)
+      .replace(/<%classResult%>/, classResult)
+      .replace(/<%result%>/, resultMsg)
+      .replace(/<%explanation%>/, msgCause)
+      .replace(/<%padUrl%>/g, encodeURI(padURL));
 
   res.contentType('text/html; charset=utf-8');
   res.send(args.content); // Send it to the requester*/
-}
+};

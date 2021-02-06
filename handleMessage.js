@@ -1,36 +1,47 @@
-const db = require('../../src/node/db/DB').db;
-const API = require('../../src/node/db/API.js');
-const async = require('../../src/node_modules/async');
+'use strict';
+
+const db = require('ep_etherpad-lite/node/db/DB').db;
+const async = require('ep_etherpad-lite/node_modules/async');
 const email = require('emailjs');
-const randomString = require('../../src/static/js/pad_utils').randomString;
-settings = require('../../src/node/utils/Settings');
+const randomString = require('ep_etherpad-lite/static/js/pad_utils').randomString;
+const settings = require('ep_etherpad-lite/node/utils/Settings');
 
 const SMTPClient = email.SMTPClient;
 
 const pluginSettings = settings.ep_email_notifications;
 const areParamsOk = (pluginSettings) ? true : false;
-const fromName = (pluginSettings && pluginSettings.fromName) ? pluginSettings.fromName : 'Etherpad';
-const fromEmail = (pluginSettings && pluginSettings.fromEmail) ? pluginSettings.fromEmail : 'pad@etherpad.org';
-const urlToPads = (pluginSettings && pluginSettings.urlToPads) ? pluginSettings.urlToPads : 'http://beta.etherpad.org/p/';
-const emailServer = (pluginSettings && pluginSettings.emailServer) ? pluginSettings.emailServer : {host: '127.0.0.1'};
+const fromName = (pluginSettings && pluginSettings.fromName)
+  ? pluginSettings.fromName : 'Etherpad';
+const fromEmail = (pluginSettings && pluginSettings.fromEmail)
+  ? pluginSettings.fromEmail : 'pad@etherpad.org';
+const urlToPads = (pluginSettings && pluginSettings.urlToPads)
+  ? pluginSettings.urlToPads : 'http://beta.etherpad.org/p/';
+const emailServer = (pluginSettings && pluginSettings.emailServer)
+  ? pluginSettings.emailServer : {host: '127.0.0.1'};
 
-if (areParamsOk == false) console.warn('Settings for ep_email_notifications plugin are missing in settings.json file');
+if (areParamsOk === false) {
+  console.warn('Settings for ep_email_notifications plugin are missing in settings.json file');
+}
 
-// Connect to the email server -- This might not be the ideal place to connect but it stops us having lots of connections
+// Connect to the email server --
+// This might not be the ideal place to connect but it stops us having lots of connections
 const server = new SMTPClient(emailServer);
 
 // When a new message comes in from the client - FML this is ugly
-exports.handleMessage = function (hook_name, context, callback) {
+exports.handleMessage = (hookName, context, callback) => {
   if (context.message && context.message.data) {
-    if (context.message.data.type == 'USERINFO_UPDATE') { // if it's a request to update an authors email
-      if (areParamsOk == false) {
+    if (context.message.data.type === 'USERINFO_UPDATE') {
+      // if it's a request to update an authors email
+      if (areParamsOk === false) {
         context.client.json.send({type: 'COLLABROOM',
           data: {
             type: 'emailNotificationMissingParams',
             payload: true,
           }});
-        console.error('Settings for ep_email_notifications plugin are missing in settings.json file');
-        return callback([null]); // don't run onto passing colorId or anything else to the message handler
+        console.error(
+            'Settings for ep_email_notifications plugin are missing in settings.json file');
+        return callback([null]);
+        // don't run onto passing colorId or anything else to the message handler
       } else if (context.message.data.userInfo) {
         if (context.message.data.userInfo.email) { // it contains email
           console.debug(context.message);
@@ -44,11 +55,13 @@ exports.handleMessage = function (hook_name, context, callback) {
             if (userIds) {
               async.forEach(Object.keys(userIds), (user, cb) => {
                 console.debug('UserIds subscribed by email to this pad:', userIds);
-                if (user == context.message.data.userInfo.email) { //  If we already have this email registered for this pad
-                  // This user ID is already assigned to this padId so don't do anything except tell the user they are already subscribed somehow..
+                if (user === context.message.data.userInfo.email) {
+                  //  If we already have this email registered for this pad
+                  // This user ID is already assigned to this padId so don't do
+                  // anything except tell the user they are already subscribed somehow..
                   alreadyExists = true;
 
-                  if (context.message.data.userInfo.email_option == 'subscribe') {
+                  if (context.message.data.userInfo.email_option === 'subscribe') {
                     // Subscription process
                     exports.subscriptionEmail(
                         context,
@@ -58,7 +71,7 @@ exports.handleMessage = function (hook_name, context, callback) {
                         context.message.data.padId,
                         callback
                     );
-                  } else if (context.message.data.userInfo.email_option == 'unsubscribe') {
+                  } else if (context.message.data.userInfo.email_option === 'unsubscribe') {
                     // Unsubscription process
                     exports.unsubscriptionEmail(
                         context,
@@ -77,8 +90,8 @@ exports.handleMessage = function (hook_name, context, callback) {
             }
 
             // In case we didn't find it in the Db
-            if (alreadyExists == false) {
-              if (context.message.data.userInfo.email_option == 'subscribe') {
+            if (alreadyExists === false) {
+              if (context.message.data.userInfo.email_option === 'subscribe') {
                 // Subscription process
                 exports.subscriptionEmail(
                     context,
@@ -88,7 +101,7 @@ exports.handleMessage = function (hook_name, context, callback) {
                     context.message.data.padId,
                     callback
                 );
-              } else if (context.message.data.userInfo.email_option == 'unsubscribe') {
+              } else if (context.message.data.userInfo.email_option === 'unsubscribe') {
                 // Unsubscription process
                 exports.unsubscriptionEmail(
                     context,
@@ -100,10 +113,12 @@ exports.handleMessage = function (hook_name, context, callback) {
             }
           }); // close db get
 
-          return callback([null]); // don't run onto passing colorId or anything else to the message handler
+          return callback([null]);
+          // don't run onto passing colorId or anything else to the message handler
         }
       }
-    } else if (context.message.data.type == 'USERINFO_GET') { // A request to find datas for a userId
+    } else if (context.message.data.type === 'USERINFO_GET') {
+      // A request to find datas for a userId
       if (context.message.data.userInfo) {
         if (context.message.data.userInfo.userId) { // it contains the userId
           console.debug(context.message);
@@ -114,8 +129,10 @@ exports.handleMessage = function (hook_name, context, callback) {
 
             if (userIds) {
               async.forEach(Object.keys(userIds), (user, cb) => {
-                if (userIds[user].authorId == context.message.data.userInfo.userId) { //  if we find the same Id in the Db as the one used by the user
-                  console.debug('Options for this pad ', userIds[user].authorId, ' found in the Db');
+                if (userIds[user].authorId === context.message.data.userInfo.userId) {
+                  //  if we find the same Id in the Db as the one used by the user
+                  console.debug(
+                      'Options for this pad ', userIds[user].authorId, ' found in the Db');
                   userIdFound = true;
 
                   // Request user subscription info process
@@ -134,7 +151,7 @@ exports.handleMessage = function (hook_name, context, callback) {
               }); // end async for each
             }
 
-            if (userIdFound == false) {
+            if (userIdFound === false) {
               // Request user subscription info process
               exports.sendUserInfo(
                   context,
@@ -155,12 +172,13 @@ exports.handleMessage = function (hook_name, context, callback) {
 /**
  * Subscription process
  */
-exports.subscriptionEmail = function (context, email, emailFound, userInfo, padId, callback) {
+exports.subscriptionEmail = (context, email, emailFound, userInfo, padId, callback) => {
   const validatesAsEmail = exports.checkEmailValidation(email);
   const subscribeId = randomString(25);
-  if (emailFound == false && validatesAsEmail) {
+  if (emailFound === false && validatesAsEmail) {
     // Subscription -> Go for it
-    console.debug('Subscription: Wrote to the database and sent client a positive response ', context.message.data.userInfo.email);
+    console.debug('Subscription: Wrote to the database and sent client a positive response ',
+        context.message.data.userInfo.email);
 
     exports.setAuthorEmailRegistered(
         userInfo,
@@ -182,7 +200,8 @@ exports.subscriptionEmail = function (context, email, emailFound, userInfo, padI
     // Send mail to user with the link for validation
     server.send(
         {
-          text: `Please click on this link in order to validate your subscription to the pad ${padId}\n${urlToPads}${encodeURI(padId)}/subscribe=${subscribeId}`,
+          text: `Please click on this link in order to validate your subscription to the pad
+              ${padId}\n${urlToPads}${encodeURI(padId)}/subscribe=${subscribeId}`,
           from: `${fromName}<${fromEmail}>`,
           to: userInfo.email,
           subject: `Email subscription confirmation for pad ${padId}`,
@@ -205,7 +224,8 @@ exports.subscriptionEmail = function (context, email, emailFound, userInfo, padI
       }});
   } else {
     // Subscription -> failed coz email already subscribed for this pad
-    console.debug('email ', context.message.data.userInfo.email, 'already subscribed to ', context.message.data.padId, ' so sending message to client');
+    console.debug('email ', context.message.data.userInfo.email,
+        'already subscribed to ', context.message.data.padId, ' so sending message to client');
 
     context.client.json.send({type: 'COLLABROOM',
       data: {
@@ -222,12 +242,13 @@ exports.subscriptionEmail = function (context, email, emailFound, userInfo, padI
 /**
  * UnsUbscription process
  */
-exports.unsubscriptionEmail = function (context, emailFound, userInfo, padId) {
+exports.unsubscriptionEmail = (context, emailFound, userInfo, padId) => {
   const unsubscribeId = randomString(25);
 
-  if (emailFound == true) {
+  if (emailFound === true) {
     // Unsubscription -> Go for it
-    console.debug('Unsubscription: Remove from the database and sent client a positive response ', context.message.data.userInfo.email);
+    console.debug('Unsubscription: Remove from the database and sent client a positive response ',
+        context.message.data.userInfo.email);
 
     exports.unsetAuthorEmailRegistered(
         userInfo,
@@ -248,7 +269,8 @@ exports.unsubscriptionEmail = function (context, emailFound, userInfo, padId) {
     // Send mail to user with the link for validation
     server.send(
         {
-          text: `Please click on this link in order to validate your unsubscription to the pad ${padId}\n${urlToPads}${padId}/unsubscribe=${unsubscribeId}`,
+          text: `Please click on this link in order to validate your unsubscription to the pad
+            ${padId}\n${urlToPads}${padId}/unsubscribe=${unsubscribeId}`,
           from: `${fromName}<${fromEmail}>`,
           to: userInfo.email,
           subject: `Email unsubscription confirmation for pad ${padId}`,
@@ -259,7 +281,8 @@ exports.unsubscriptionEmail = function (context, emailFound, userInfo, padId) {
     );
   } else {
     // Unsubscription -> Send failed as email not found
-    console.debug('Unsubscription: Send client a negative response ', context.message.data.userInfo.email);
+    console.debug(
+        'Unsubscription: Send client a negative response ', context.message.data.userInfo.email);
 
     context.client.json.send({type: 'COLLABROOM',
       data: {
@@ -275,19 +298,20 @@ exports.unsubscriptionEmail = function (context, emailFound, userInfo, padId) {
 /**
  * Request user subscription info process
  */
-exports.sendUserInfo = function (context, emailFound, email, userInfo) {
+exports.sendUserInfo = (context, emailFound, email, userInfo) => {
   const defaultOnStartOption = true;
   const defaultOnEndOption = false;
-
+  let onStart;
+  let onEnd;
   if (typeof userInfo.onStart === 'boolean' && typeof userInfo.onEnd === 'boolean') {
-    var onStart = userInfo.onStart;
-    var onEnd = userInfo.onEnd;
+    onStart = userInfo.onStart;
+    onEnd = userInfo.onEnd;
   } else { // In case these options are not yet defined for this userId
-    var onStart = defaultOnStartOption;
-    var onEnd = defaultOnEndOption;
+    onStart = defaultOnStartOption;
+    onEnd = defaultOnEndOption;
   }
 
-  if (emailFound == true) {
+  if (emailFound === true) {
     // We send back the options associated to this userId
     const msg = {
       type: 'emailNotificationGetUserInfo',
@@ -317,7 +341,7 @@ exports.sendUserInfo = function (context, emailFound, email, userInfo) {
 /**
  * Function to check if an email is valid
  */
-exports.checkEmailValidation = function (email) {
+exports.checkEmailValidation = (email) => {
   const validator = require('validator');
   if (validator.isEmail(email)) {
     return true;
@@ -331,7 +355,7 @@ exports.checkEmailValidation = function (email) {
  */
 
 // Write email, options, authorId and pendingId to the database
-exports.setAuthorEmailRegistered = function (userInfo, authorId, subscribeId, padId) {
+exports.setAuthorEmailRegistered = (userInfo, authorId, subscribeId, padId) => {
   const timestamp = new Date().getTime();
   const registered = {
     authorId,
@@ -361,7 +385,7 @@ exports.setAuthorEmailRegistered = function (userInfo, authorId, subscribeId, pa
 };
 
 // Write email, authorId and pendingId to the database
-exports.unsetAuthorEmailRegistered = function (userInfo, authorId, unsubscribeId, padId) {
+exports.unsetAuthorEmailRegistered = (userInfo, authorId, unsubscribeId, padId) => {
   const timestamp = new Date().getTime();
   const registered = {
     authorId,

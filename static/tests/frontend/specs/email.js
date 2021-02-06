@@ -1,3 +1,5 @@
+'use strict';
+
 describe('email notifications plugin', function () {
   // create a new pad before each test run
   beforeEach(function (cb) {
@@ -31,7 +33,7 @@ describe('email notifications plugin', function () {
       chrome$('#ep_email_form_mysettings [name=ep_email_subscribe]').click(); // function() {
 
       // Is the correct gritter msg there
-      helper.waitFor(() => chrome$('.gritter-item').is(':visible') == true)
+      helper.waitFor(() => chrome$('.gritter-item').is(':visible') === true)
           .done(() => {
             expect(chrome$('.emailNotificationsSubscrOptionsMissing').is(':visible')).to.be(true);
             done();
@@ -55,7 +57,7 @@ describe('email notifications plugin', function () {
       chrome$('#ep_email_form_mysettings [name=ep_email_subscribe]').click();
 
       // Is the correct gritter msg there
-      helper.waitFor(() => chrome$('.gritter-item').is(':visible') == true)
+      helper.waitFor(() => chrome$('.gritter-item').is(':visible') === true)
           .done(() => {
             const clientVars = $('iframe')[0].contentWindow.window.clientVars;
             if (clientVars.ep_email_missing) { // don't test if settings aren't set
@@ -82,7 +84,7 @@ describe('email notifications plugin', function () {
       chrome$('#ep_email_form_mysettings [name=ep_email_unsubscribe]').click();
 
       // Is the correct gritter msg there
-      helper.waitFor(() => chrome$('.gritter-item').is(':visible') == true)
+      helper.waitFor(() => chrome$('.gritter-item').is(':visible') === true)
           .done(() => {
             const clientVars = $('iframe')[0].contentWindow.window.clientVars;
             if (clientVars.ep_email_missing) { // don't test if settings aren't set
@@ -112,7 +114,7 @@ describe('email notifications plugin', function () {
       chrome$('#ep_email_form_mysettings [name=ep_email_subscribe]').click();
 
       // Is the correct gritter msg there
-      helper.waitFor(() => chrome$('.gritter-item').is(':visible') == true)
+      helper.waitFor(() => chrome$('.gritter-item').is(':visible') === true)
           .done(() => {
             const clientVars = $('iframe')[0].contentWindow.window.clientVars;
             if (clientVars.ep_email_missing) { // don't test if settings aren't set
