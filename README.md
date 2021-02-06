@@ -1,4 +1,4 @@
-# Description
+# BROKEN PLUGIN, NEEDS FIXING
 This plugin allows users to subscribe to pads and receive email updates when a pad is being modified.  You can modify the frequency.  This plugin is still in early stage and has things TODO (See TODO).
 
 # Source code
