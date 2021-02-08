@@ -1,3 +1,5 @@
+![Publish Status](https://github.com/ether/ep_email_notifications/workflows/Node.js%20Package/badge.svg) ![Backend Tests Status](https://github.com/ether/ep_email_notifications/workflows/Backend%20tests/badge.svg)
+
 # BROKEN PLUGIN, NEEDS FIXING
 This plugin allows users to subscribe to pads and receive email updates when a pad is being modified.  You can modify the frequency.  This plugin is still in early stage and has things TODO (See TODO).
 
