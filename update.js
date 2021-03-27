@@ -78,8 +78,8 @@ exports.notifyBegin = (padId) => {
                 if (!userIsOnPad && onStart) {
                   console.debug(`Emailing ${recipient} about a new begin update`);
                   server.send({
-                    text: `This pad is now being edited:\n
-                        ${padUrl(padId, '  <%s>\n')}${emailFooter}`,
+                    text: 'This pad is now being edited:\n' +
+                        `${padUrl(padId, '  <%s>\n')}${emailFooter}`,
                     from: `${fromName}<${fromEmail}>`,
                     to: recipient,
                     subject: `Someone started editing ${padId}`,
@@ -112,8 +112,8 @@ exports.notifyEnd = (padId) => {
                 if (!userIsOnPad && onEnd) {
                   console.debug(`Emailing ${recipient} about a pad finished being updated`);
                   server.send({
-                    text: `This pad is done being edited:\n
-                        ${padUrl(padId, '  <%s>\n')}${emailFooter}`,
+                    text: 'This pad is done being edited:\n' +
+                        `${padUrl(padId, '  <%s>\n')}${emailFooter}`,
                     from: `${fromName}<${fromEmail}>`,
                     to: recipient,
                     subject: `Someone finished editing ${padId}`,
