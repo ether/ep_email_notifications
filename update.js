@@ -130,7 +130,7 @@ exports.notifyEnd = (padId) => {
 
 exports.sendUpdates = (padId) => {
   // check to see if we can delete this interval
-  API.getLastEdited(padId, (callback, message) => {
+  API.getLastEdited(padId).then((message) => {
     // we delete an interval if a pad hasn't been edited in X seconds.
     const currTS = new Date().getTime();
     if (currTS - message.lastEdited > staleTime) {
