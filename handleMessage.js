@@ -1,7 +1,6 @@
 'use strict';
 
 const db = require('ep_etherpad-lite/node/db/DB').db;
-const async = require('ep_etherpad-lite/node_modules/async');
 const email = require('emailjs');
 const randomString = require('ep_etherpad-lite/static/js/pad_utils').randomString;
 const settings = require('ep_etherpad-lite/node/utils/Settings');
@@ -52,41 +51,34 @@ exports.handleMessage = (hookName, context, callback) => {
 
             let alreadyExists = false;
 
-            if (userIds) {
-              async.forEach(Object.keys(userIds), (user, cb) => {
-                console.debug('UserIds subscribed by email to this pad:', userIds);
-                if (user === context.message.data.userInfo.email) {
-                  //  If we already have this email registered for this pad
-                  // This user ID is already assigned to this padId so don't do
-                  // anything except tell the user they are already subscribed somehow..
-                  alreadyExists = true;
+            for (const user of Object.keys(userIds || {})) {
+              console.debug('UserIds subscribed by email to this pad:', userIds);
+              if (user === context.message.data.userInfo.email) {
+                //  If we already have this email registered for this pad
+                // This user ID is already assigned to this padId so don't do
+                // anything except tell the user they are already subscribed somehow..
+                alreadyExists = true;
 
-                  if (context.message.data.userInfo.email_option === 'subscribe') {
-                    // Subscription process
-                    exports.subscriptionEmail(
-                        context,
-                        context.message.data.userInfo.email,
-                        alreadyExists,
-                        context.message.data.userInfo,
-                        context.message.data.padId,
-                        callback
-                    );
-                  } else if (context.message.data.userInfo.email_option === 'unsubscribe') {
-                    // Unsubscription process
-                    exports.unsubscriptionEmail(
-                        context,
-                        alreadyExists,
-                        context.message.data.userInfo,
-                        context.message.data.padId
-                    );
-                  }
+                if (context.message.data.userInfo.email_option === 'subscribe') {
+                  // Subscription process
+                  exports.subscriptionEmail(
+                      context,
+                      context.message.data.userInfo.email,
+                      alreadyExists,
+                      context.message.data.userInfo,
+                      context.message.data.padId,
+                      callback
+                  );
+                } else if (context.message.data.userInfo.email_option === 'unsubscribe') {
+                  // Unsubscription process
+                  exports.unsubscriptionEmail(
+                      context,
+                      alreadyExists,
+                      context.message.data.userInfo,
+                      context.message.data.padId
+                  );
                 }
-                cb();
-              },
-
-              (err) => {
-                // There should be something in here!
-              }); // end async for each
+              }
             }
 
             // In case we didn't find it in the Db
@@ -127,28 +119,21 @@ exports.handleMessage = (hookName, context, callback) => {
           db.get(`emailSubscription:${context.message.data.padId}`, (err, userIds) => {
             let userIdFound = false;
 
-            if (userIds) {
-              async.forEach(Object.keys(userIds), (user, cb) => {
-                if (userIds[user].authorId === context.message.data.userInfo.userId) {
-                  //  if we find the same Id in the Db as the one used by the user
-                  console.debug(
-                      'Options for this pad ', userIds[user].authorId, ' found in the Db');
-                  userIdFound = true;
+            for (const user of Object.keys(userIds || {})) {
+              if (userIds[user].authorId === context.message.data.userInfo.userId) {
+                //  if we find the same Id in the Db as the one used by the user
+                console.debug(
+                    'Options for this pad ', userIds[user].authorId, ' found in the Db');
+                userIdFound = true;
 
-                  // Request user subscription info process
-                  exports.sendUserInfo(
-                      context,
-                      userIdFound,
-                      user,
-                      userIds[user]
-                  );
-                }
-                cb();
-              },
-
-              (err) => {
-                // There should be something in here!
-              }); // end async for each
+                // Request user subscription info process
+                exports.sendUserInfo(
+                    context,
+                    userIdFound,
+                    user,
+                    userIds[user]
+                );
+              }
             }
 
             if (userIdFound === false) {

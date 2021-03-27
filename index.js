@@ -34,7 +34,7 @@ exports.registerRoute = (hookName, args, callback) => {
               };
 
               if (userIds && userIds.pending) {
-                async.forEach(Object.keys(userIds.pending), (user) => {
+                for (const user of Object.keys(userIds.pending)) {
                   const userInfo = userIds.pending[user];
 
                   //  If we have Id int the Db, then we are good ot really unsubscribe the user
@@ -81,13 +81,7 @@ exports.registerRoute = (hookName, args, callback) => {
                       email: user,
                     };
                   }
-                },
-
-                (err, msg) => {
-                  if (err != null) {
-                    console.error('Error in async.forEach', err, ' -> ', msg);
-                  }
-                }); // end async for each
+                }
               }
               cb(null, resultDb);
             });
@@ -189,7 +183,7 @@ const cleanPendingData = (padId) => {
     console.debug('cleanPendingData: Initial userIds:', userIds);
     modifiedData = userIds;
     if (userIds && userIds.pending) {
-      async.forEach(Object.keys(userIds.pending), (user) => {
+      for (const user of Object.keys(userIds.pending)) {
         const timeDiff = new Date().getTime() - userIds.pending[user].timestamp;
         const timeDiffGood = timeDiff < 1000 * 60 * 60 * 24;
 
@@ -198,7 +192,7 @@ const cleanPendingData = (padId) => {
 
           areDataModified = true;
         }
-      });
+      }
     }
 
     if (areDataModified === true) {
