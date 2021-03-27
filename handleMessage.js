@@ -5,6 +5,7 @@ const email = require('emailjs');
 const randomString = require('ep_etherpad-lite/static/js/pad_utils').randomString;
 const settings = require('ep_etherpad-lite/node/utils/Settings');
 const util = require('util');
+const validator = require('validator');
 
 const SMTPClient = email.SMTPClient;
 
@@ -146,7 +147,7 @@ exports.handleMessage = async (hookName, context) => {
  * Subscription process
  */
 const subscriptionEmail = async (context, email, emailFound, userInfo, padId) => {
-  const validatesAsEmail = checkEmailValidation(email);
+  const validatesAsEmail = validator.isEmail(email);
   const subscribeId = randomString(25);
   if (emailFound === false && validatesAsEmail) {
     // Subscription -> Go for it
@@ -312,18 +313,6 @@ const sendUserInfo = (context, emailFound, email, userInfo) => {
           success: false,
         },
       }});
-  }
-};
-
-/**
- * Function to check if an email is valid
- */
-const checkEmailValidation = (email) => {
-  const validator = require('validator');
-  if (validator.isEmail(email)) {
-    return true;
-  } else {
-    return false;
   }
 };
 
