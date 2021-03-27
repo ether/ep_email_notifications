@@ -147,30 +147,9 @@ exports.sendUpdates = (padId) => {
   // This comes frmo the database
 };
 
-
-// Is the user editing the pad?
 exports.isUserEditingPad = (padId, user, cb) => {
-  // console.warn('padId is', padId);
-  /*
-  API.padUsers(padId, function(callback, padUsers){ // get the current users editing the pad
-    var userIsEditing = false;
-    console.debug("Current Pad Users:"+padUsers);
-    // for each user on the pad right now
-    async.forEach(padUsers.padUsers,
-      function(userOnPad, callback){
-        if(userOnPad.id == user){
-          console.debug("User is on the pad so don't send any notification");
-          userIsEditing = true; // If the user is editing the pad then return true
-        }else{
-          userIsEditing = false; // If the user isnt on this pad then that'd be okay to contact em
-        }
-        callback(userIsEditing);
-
-      },
-      function(err){
-        cb(null, userIsEditing);
-      });
-   });
-  */
-  cb(null, false);
+  util.callbackify(async () => {
+    const {padUsers} = await API.padUsers(padId);
+    return padUsers.map((author) => author.id).includes(user);
+  })(cb);
 };
