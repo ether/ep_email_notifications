@@ -18,11 +18,6 @@ exports.registerRoute = (hookName, args, callback) => {
     let foundInDb = false;
     let timeDiffGood = false;
     let email = 'your email';
-    let resultDb = {
-      foundInDb,
-      timeDiffGood,
-      email,
-    };
 
     const {pending = {}} = userIds || {};
     for (const [user, userInfo] of Object.entries(pending)) {
@@ -34,32 +29,27 @@ exports.registerRoute = (hookName, args, callback) => {
       email = user;
 
       // Checking if the demand is not older than 24h
-      const timeDiff = new Date().getTime() - userInfo.timestamp;
+      const timeDiff = Date.now() - userInfo.timestamp;
       timeDiffGood = timeDiff < 1000 * 60 * 60 * 24;
+      if (!timeDiffGood) continue;
 
-      if (action === 'subscribe' && timeDiffGood === true) {
+      if (action === 'subscribe') {
         // Subscription process
         await Promise.all([
           setAuthorEmail(userInfo, user),
           setAuthorEmailRegistered(userIds, userInfo, user, padId),
         ]);
-      } else if (action === 'unsubscribe' && timeDiffGood === true) {
+      } else if (action === 'unsubscribe') {
         // Unsubscription process
         await Promise.all([
           unsetAuthorEmail(userInfo, user),
           unsetAuthorEmailRegistered(userIds, user, padId),
         ]);
       }
-
-      resultDb = {
-        foundInDb,
-        timeDiffGood,
-        email: user,
-      };
     }
 
     // Create and send the output message
-    await sendContent(res, args, action, padId, padURL, resultDb);
+    await sendContent(res, args, action, padId, padURL, {foundInDb, timeDiffGood, email});
 
     // Take a moment to clean all obsolete pending data
     await cleanPendingData(padId);
@@ -143,13 +133,13 @@ const cleanPendingData = async (padId) => {
     const timeDiff = new Date().getTime() - pending[user].timestamp;
     const timeDiffGood = timeDiff < 1000 * 60 * 60 * 24;
 
-    if (timeDiffGood !== false) continue;
+    if (timeDiffGood) continue;
     delete pending[user];
 
     areDataModified = true;
   }
 
-  if (areDataModified === true) {
+  if (areDataModified) {
     // Write the modified datas back in the Db
     await db.set(`emailSubscription:${padId}`, userIds);
   }
@@ -172,7 +162,7 @@ const sendContent = async (res, args, action, padId, padURL, resultDb) => {
   }
   let msgCause, resultMsg, classResult;
 
-  if (resultDb.foundInDb === true && resultDb.timeDiffGood === true) {
+  if (resultDb.foundInDb && resultDb.timeDiffGood) {
     // Pending data were found un Db and updated -> good
     resultMsg = 'Success';
     classResult = 'validationGood';
@@ -181,7 +171,7 @@ const sendContent = async (res, args, action, padId, padURL, resultDb) => {
     } else {
       msgCause = "You won't receive anymore email when someone changes this pad.";
     }
-  } else if (resultDb.foundInDb === true) {
+  } else if (resultDb.foundInDb) {
     // Pending data were found but older than a day -> fail
     resultMsg = 'Too late!';
     classResult = 'validationBad';

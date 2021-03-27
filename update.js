@@ -12,7 +12,6 @@ const SMTPClient = email.SMTPClient;
 
 // Settings -- EDIT THESE IN settings.json not here..
 const pluginSettings = settings.ep_email_notifications;
-const areParamsOk = (pluginSettings) ? true : false;
 const checkFrequency = (pluginSettings && pluginSettings.checkFrequency)
   ? pluginSettings.checkFrequency : 60000; // 10 seconds
 const staleTime = (pluginSettings && pluginSettings.staleTime)
@@ -37,7 +36,7 @@ const server = new SMTPClient(emailServer);
 const emailFooter = "\nYou can unsubscribe from these emails in the pad's Settings window.\n";
 
 exports.padUpdate = (hookName, _pad) => {
-  if (areParamsOk === false) return false;
+  if (!pluginSettings) return false;
 
   const pad = _pad.pad;
   const padId = pad.id;
@@ -52,10 +51,7 @@ exports.padUpdate = (hookName, _pad) => {
   timers[padId] = setInterval(() => sendUpdates(padId), checkFrequency);
 };
 
-const padUrl = (padId, fmt) => {
-  fmt = fmt || '%s';
-  return util.format(fmt, urlToPads + encodeURIComponent(padId));
-};
+const padUrl = (padId) => urlToPads + encodeURIComponent(padId);
 
 const notifyBegin = async (padId) => {
   console.warn(`Getting pad email stuff for ${padId}`);
@@ -67,8 +63,7 @@ const notifyBegin = async (padId) => {
     // Is this recipient already on the pad?
     const userIsOnPad = await isUserEditingPad(padId, recipients[recipient].authorId);
     // is the user already on the pad?
-    const onStart = typeof (recipients[recipient].onStart) === 'undefined' ||
-        recipients[recipient].onStart ? true : false;
+    const {onStart = true} = recipients[recipient];
     // In case onStart wasn't defined we set it to true
     if (userIsOnPad || !onStart) {
       console.debug("Didn't send an email because user is already on the pad");
@@ -78,8 +73,7 @@ const notifyBegin = async (padId) => {
     let message;
     try {
       message = await util.promisify(server.send.bind(server))({
-        text: 'This pad is now being edited:\n' +
-            `${padUrl(padId, '  <%s>\n')}${emailFooter}`,
+        text: `This pad is now being edited:\n  <${padUrl(padId)}>\n${emailFooter}`,
         from: `${fromName} <${fromEmail}>`,
         to: recipient,
         subject: `Someone started editing ${padId}`,
@@ -102,8 +96,7 @@ const notifyEnd = async (padId) => {
     if (recipient === 'pending') return;
     // Is this recipient already on the pad?
     const userIsOnPad = await isUserEditingPad(padId, recipients[recipient].authorId);
-    const onEnd = typeof (recipients[recipient].onEnd) === 'undefined' ||
-        recipients[recipient].onEnd ? true : false;
+    const {onEnd = true} = recipients[recipient];
     // In case onEnd wasn't defined we set it to false
 
     if (userIsOnPad || !onEnd) {
@@ -114,8 +107,7 @@ const notifyEnd = async (padId) => {
     let message;
     try {
       message = await util.promisify(server.send.bind(server))({
-        text: 'This pad is done being edited:\n' +
-            `${padUrl(padId, '  <%s>\n')}${emailFooter}`,
+        text: `This pad is done being edited:\n  <${padUrl(padId)}>\n${emailFooter}`,
         from: `${fromName} <${fromEmail}>`,
         to: recipient,
         subject: `Someone finished editing ${padId}`,
