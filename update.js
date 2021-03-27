@@ -49,7 +49,7 @@ exports.padUpdate = (hookName, _pad) => {
     exports.notifyBegin(padId);
     console.debug(`Created an interval time check for ${padId}`);
     // if not then create one and write it to the timers object
-    timers[padId] = exports.createInterval(padId, checkFrequency);
+    timers[padId] = setInterval(() => exports.sendUpdates(padId), checkFrequency);
   } else { // an interval already exists so don't create
 
   }
@@ -174,8 +174,3 @@ exports.isUserEditingPad = (padId, user, cb) => {
   */
   cb(null, false);
 };
-
-// Creates an interval process to check to send Updates based on checkFrequency and it returns an ID
-exports.createInterval = (padId) => setInterval(() => {
-  exports.sendUpdates(padId), checkFrequency;
-});
