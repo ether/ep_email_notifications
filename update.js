@@ -80,7 +80,7 @@ exports.notifyBegin = (padId) => {
                   server.send({
                     text: 'This pad is now being edited:\n' +
                         `${padUrl(padId, '  <%s>\n')}${emailFooter}`,
-                    from: `${fromName}<${fromEmail}>`,
+                    from: `${fromName} <${fromEmail}>`,
                     to: recipient,
                     subject: `Someone started editing ${padId}`,
                   }, (err, message) => { console.log(err || message); });
@@ -114,7 +114,7 @@ exports.notifyEnd = (padId) => {
                   server.send({
                     text: 'This pad is done being edited:\n' +
                         `${padUrl(padId, '  <%s>\n')}${emailFooter}`,
-                    from: `${fromName}<${fromEmail}>`,
+                    from: `${fromName} <${fromEmail}>`,
                     to: recipient,
                     subject: `Someone finished editing ${padId}`,
                   }, (err, message) => { console.log(err || message); });

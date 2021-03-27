@@ -187,7 +187,7 @@ exports.subscriptionEmail = (context, email, emailFound, userInfo, padId, callba
         {
           text: 'Please click on this link in order to validate your subscription to the pad ' +
               `${padId}\n${urlToPads}${encodeURI(padId)}/subscribe=${subscribeId}`,
-          from: `${fromName}<${fromEmail}>`,
+          from: `${fromName} <${fromEmail}>`,
           to: userInfo.email,
           subject: `Email subscription confirmation for pad ${padId}`,
         },
@@ -256,7 +256,7 @@ exports.unsubscriptionEmail = (context, emailFound, userInfo, padId) => {
         {
           text: 'Please click on this link in order to validate your unsubscription to the pad ' +
               `${padId}\n${urlToPads}${padId}/unsubscribe=${unsubscribeId}`,
-          from: `${fromName}<${fromEmail}>`,
+          from: `${fromName} <${fromEmail}>`,
           to: userInfo.email,
           subject: `Email unsubscription confirmation for pad ${padId}`,
         },
