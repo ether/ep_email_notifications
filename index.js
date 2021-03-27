@@ -2,7 +2,6 @@
 
 const db = require('ep_etherpad-lite/node/db/DB').db;
 const fs = require('fs');
-const async = require('ep_etherpad-lite/node_modules/async');
 const settings = require('ep_etherpad-lite/node/utils/Settings');
 
 // Remove cache for this procedure
@@ -15,92 +14,73 @@ exports.registerRoute = (hookName, args, callback) => {
     const {padId, action, actionId} = req.params;
     const padURL = settings.ep_email_notifications.urlToPads + encodeURIComponent(padId);
 
-    async.waterfall(
-        [
-          (cb) => {
-          // Is the (un)subscription valid (exists & not older than 24h)
-            db.get(`emailSubscription:${padId}`, (err, userIds) => {
-              let foundInDb = false;
-              let timeDiffGood = false;
-              let email = 'your email';
-              let resultDb = {
-                foundInDb,
-                timeDiffGood,
-                email,
-              };
+    db.get(`emailSubscription:${padId}`, (err, userIds) => {
+      let foundInDb = false;
+      let timeDiffGood = false;
+      let email = 'your email';
+      let resultDb = {
+        foundInDb,
+        timeDiffGood,
+        email,
+      };
 
-              if (userIds && userIds.pending) {
-                for (const user of Object.keys(userIds.pending)) {
-                  const userInfo = userIds.pending[user];
+      if (userIds && userIds.pending) {
+        for (const user of Object.keys(userIds.pending)) {
+          const userInfo = userIds.pending[user];
 
-                  //  If we have Id int the Db, then we are good ot really unsubscribe the user
-                  if (userInfo[`${action}Id`] === actionId) {
-                    console.debug('emailSubscription:', user, 'found in DB:', userInfo);
+          //  If we have Id int the Db, then we are good ot really unsubscribe the user
+          if (userInfo[`${action}Id`] === actionId) {
+            console.debug('emailSubscription:', user, 'found in DB:', userInfo);
 
-                    foundInDb = true;
-                    email = user;
+            foundInDb = true;
+            email = user;
 
-                    // Checking if the demand is not older than 24h
-                    const timeDiff = new Date().getTime() - userInfo.timestamp;
-                    timeDiffGood = timeDiff < 1000 * 60 * 60 * 24;
+            // Checking if the demand is not older than 24h
+            const timeDiff = new Date().getTime() - userInfo.timestamp;
+            timeDiffGood = timeDiff < 1000 * 60 * 60 * 24;
 
-                    if (action === 'subscribe' && timeDiffGood === true) {
-                    // Subscription process
-                      setAuthorEmail(
-                          userInfo,
-                          user
-                      );
+            if (action === 'subscribe' && timeDiffGood === true) {
+              // Subscription process
+              setAuthorEmail(
+                  userInfo,
+                  user
+              );
 
-                      setAuthorEmailRegistered(
-                          userIds,
-                          userInfo,
-                          user,
-                          padId
-                      );
-                    } else if (action === 'unsubscribe' && timeDiffGood === true) {
-                    // Unsubscription process
-                      unsetAuthorEmail(
-                          userInfo,
-                          user
-                      );
+              setAuthorEmailRegistered(
+                  userIds,
+                  userInfo,
+                  user,
+                  padId
+              );
+            } else if (action === 'unsubscribe' && timeDiffGood === true) {
+              // Unsubscription process
+              unsetAuthorEmail(
+                  userInfo,
+                  user
+              );
 
-                      unsetAuthorEmailRegistered(
-                          userIds,
-                          user,
-                          padId
-                      );
-                    }
+              unsetAuthorEmailRegistered(
+                  userIds,
+                  user,
+                  padId
+              );
+            }
 
-                    resultDb = {
-                      foundInDb,
-                      timeDiffGood,
-                      email: user,
-                    };
-                  }
-                }
-              }
-              cb(null, resultDb);
-            });
-          },
-
-          (resultDb, cb) => {
-          // Create and send the output message
-            sendContent(res, args, action, padId, padURL, resultDb);
-            cb(null, resultDb);
-          },
-
-          (resultDb, cb) => {
-          // Take a moment to clean all obsolete pending data
-            cleanPendingData(padId);
-            cb(null, resultDb);
-          },
-        ],
-        (err, results) => {
-          if (err != null) {
-            console.error('Callback async.series: Err -> ', err, ' / results -> ', results);
+            resultDb = {
+              foundInDb,
+              timeDiffGood,
+              email: user,
+            };
           }
         }
-    );
+      }
+
+      // Create and send the output message
+      sendContent(res, args, action, padId, padURL, resultDb);
+
+      // Take a moment to clean all obsolete pending data
+      cleanPendingData(padId);
+    });
   });
 
   callback(); // Am I even called?
