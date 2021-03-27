@@ -4,6 +4,7 @@ const db = require('ep_etherpad-lite/node/db/DB');
 const email = require('emailjs');
 const randomString = require('ep_etherpad-lite/static/js/pad_utils').randomString;
 const settings = require('ep_etherpad-lite/node/utils/Settings');
+const util = require('util');
 
 const SMTPClient = email.SMTPClient;
 
@@ -29,8 +30,8 @@ const server = new SMTPClient(emailServer);
 const padUrl = (padId) => urlToPads + encodeURIComponent(padId);
 
 // When a new message comes in from the client - FML this is ugly
-exports.handleMessage = (hookName, context, callback) => {
-  if (!context.message || !context.message.data) return callback();
+exports.handleMessage = async (hookName, context) => {
+  if (!context.message || !context.message.data) return;
   if (context.message.data.type === 'USERINFO_UPDATE') {
     // if it's a request to update an authors email
     if (areParamsOk === false) {
@@ -41,115 +42,110 @@ exports.handleMessage = (hookName, context, callback) => {
         }});
       console.error(
           'Settings for ep_email_notifications plugin are missing in settings.json file');
-      return callback([null]);
+      return [null];
       // don't run onto passing colorId or anything else to the message handler
     }
-    if (!context.message.data.userInfo || !context.message.data.userInfo.email) return callback();
+    if (!context.message.data.userInfo || !context.message.data.userInfo.email) return;
     console.debug(context.message);
 
     // does email (Un)Subscription already exist for this email address?
-    db.get(`emailSubscription:${context.message.data.padId}`).then((userIds) => {
-      console.debug('emailSubscription');
+    const userIds = await db.get(`emailSubscription:${context.message.data.padId}`);
+    console.debug('emailSubscription');
 
-      let alreadyExists = false;
+    let alreadyExists = false;
 
-      for (const user of Object.keys(userIds || {})) {
-        console.debug('UserIds subscribed by email to this pad:', userIds);
-        if (user !== context.message.data.userInfo.email) continue;
-        //  If we already have this email registered for this pad
-        // This user ID is already assigned to this padId so don't do
-        // anything except tell the user they are already subscribed somehow..
-        alreadyExists = true;
+    await Promise.all(Object.keys(userIds || {}).map(async (user) => {
+      console.debug('UserIds subscribed by email to this pad:', userIds);
+      if (user !== context.message.data.userInfo.email) return;
+      //  If we already have this email registered for this pad
+      // This user ID is already assigned to this padId so don't do
+      // anything except tell the user they are already subscribed somehow..
+      alreadyExists = true;
 
-        if (context.message.data.userInfo.email_option === 'subscribe') {
-          // Subscription process
-          subscriptionEmail(
-              context,
-              context.message.data.userInfo.email,
-              alreadyExists,
-              context.message.data.userInfo,
-              context.message.data.padId,
-              callback
-          );
-        } else if (context.message.data.userInfo.email_option === 'unsubscribe') {
-          // Unsubscription process
-          unsubscriptionEmail(
-              context,
-              alreadyExists,
-              context.message.data.userInfo,
-              context.message.data.padId
-          );
-        }
-      }
-
-      if (alreadyExists !== false) return;
       if (context.message.data.userInfo.email_option === 'subscribe') {
         // Subscription process
-        subscriptionEmail(
+        await subscriptionEmail(
             context,
             context.message.data.userInfo.email,
             alreadyExists,
             context.message.data.userInfo,
-            context.message.data.padId,
-            callback
+            context.message.data.padId
         );
       } else if (context.message.data.userInfo.email_option === 'unsubscribe') {
         // Unsubscription process
-        unsubscriptionEmail(
+        await unsubscriptionEmail(
             context,
             alreadyExists,
             context.message.data.userInfo,
             context.message.data.padId
         );
       }
-    }); // close db get
+    }));
 
-    return callback([null]);
+    if (alreadyExists !== false) return;
+    if (context.message.data.userInfo.email_option === 'subscribe') {
+      // Subscription process
+      await subscriptionEmail(
+          context,
+          context.message.data.userInfo.email,
+          alreadyExists,
+          context.message.data.userInfo,
+          context.message.data.padId
+      );
+    } else if (context.message.data.userInfo.email_option === 'unsubscribe') {
+      // Unsubscription process
+      await unsubscriptionEmail(
+          context,
+          alreadyExists,
+          context.message.data.userInfo,
+          context.message.data.padId
+      );
+    }
+
+    return [null];
     // don't run onto passing colorId or anything else to the message handler
   } else if (context.message.data.type === 'USERINFO_GET') {
     // A request to find datas for a userId
-    if (!context.message.data.userInfo || !context.message.data.userInfo.userId) return callback();
+    if (!context.message.data.userInfo || !context.message.data.userInfo.userId) return;
     console.debug(context.message);
 
     // does email Subscription already exist for this UserId?
-    db.get(`emailSubscription:${context.message.data.padId}`).then((userIds) => {
-      let userIdFound = false;
+    const userIds = await db.get(`emailSubscription:${context.message.data.padId}`);
+    let userIdFound = false;
 
-      for (const user of Object.keys(userIds || {})) {
-        if (userIds[user].authorId !== context.message.data.userInfo.userId) continue;
-        //  if we find the same Id in the Db as the one used by the user
-        console.debug(
-            'Options for this pad ', userIds[user].authorId, ' found in the Db');
-        userIdFound = true;
+    for (const user of Object.keys(userIds || {})) {
+      if (userIds[user].authorId !== context.message.data.userInfo.userId) continue;
+      //  if we find the same Id in the Db as the one used by the user
+      console.debug(
+          'Options for this pad ', userIds[user].authorId, ' found in the Db');
+      userIdFound = true;
 
-        // Request user subscription info process
-        sendUserInfo(
-            context,
-            userIdFound,
-            user,
-            userIds[user]
-        );
-      }
+      // Request user subscription info process
+      sendUserInfo(
+          context,
+          userIdFound,
+          user,
+          userIds[user]
+      );
+    }
 
-      if (userIdFound === false) {
-        // Request user subscription info process
-        sendUserInfo(
-            context,
-            userIdFound,
-            '',
-            ''
-        );
-      }
-    });
-    return callback([null]);
+    if (userIdFound === false) {
+      // Request user subscription info process
+      sendUserInfo(
+          context,
+          userIdFound,
+          '',
+          ''
+      );
+    }
+    return [null];
   }
-  callback();
 };
 
 /**
  * Subscription process
  */
-const subscriptionEmail = (context, email, emailFound, userInfo, padId, callback) => {
+const subscriptionEmail = async (context, email, emailFound, userInfo, padId) => {
   const validatesAsEmail = checkEmailValidation(email);
   const subscribeId = randomString(25);
   if (emailFound === false && validatesAsEmail) {
@@ -157,7 +153,7 @@ const subscriptionEmail = (context, email, emailFound, userInfo, padId, callback
     console.debug('Subscription: Wrote to the database and sent client a positive response ',
         context.message.data.userInfo.email);
 
-    setAuthorEmailRegistered(
+    await setAuthorEmailRegistered(
         userInfo,
         userInfo.userId,
         subscribeId,
@@ -175,18 +171,20 @@ const subscriptionEmail = (context, email, emailFound, userInfo, padId, callback
       }});
 
     // Send mail to user with the link for validation
-    server.send(
-        {
-          text: 'Please click on this link in order to validate your subscription to the pad ' +
-              `${padId}\n${padUrl(padId)}/subscribe=${subscribeId}`,
-          from: `${fromName} <${fromEmail}>`,
-          to: userInfo.email,
-          subject: `Email subscription confirmation for pad ${padId}`,
-        },
-        (err, message) => {
-          console.error(err || message);
-        }
-    );
+    let message;
+    try {
+      message = await util.promisify(server.send.bind(server))({
+        text: 'Please click on this link in order to validate your subscription to the pad ' +
+            `${padId}\n${padUrl(padId)}/subscribe=${subscribeId}`,
+        from: `${fromName} <${fromEmail}>`,
+        to: userInfo.email,
+        subject: `Email subscription confirmation for pad ${padId}`,
+      });
+    } catch (err) {
+      console.error(err);
+      return;
+    }
+    console.log(message);
   } else if (!validatesAsEmail) {
     // Subscription -> failed coz mail malformed..  y'know in general fuck em!
     console.debug('Dropped email subscription due to malformed email address');
@@ -219,7 +217,7 @@ const subscriptionEmail = (context, email, emailFound, userInfo, padId, callback
 /**
  * UnsUbscription process
  */
-const unsubscriptionEmail = (context, emailFound, userInfo, padId) => {
+const unsubscriptionEmail = async (context, emailFound, userInfo, padId) => {
   const unsubscribeId = randomString(25);
 
   if (emailFound === true) {
@@ -227,7 +225,7 @@ const unsubscriptionEmail = (context, emailFound, userInfo, padId) => {
     console.debug('Unsubscription: Remove from the database and sent client a positive response ',
         context.message.data.userInfo.email);
 
-    unsetAuthorEmailRegistered(
+    await unsetAuthorEmailRegistered(
         userInfo,
         userInfo.userId,
         unsubscribeId,
@@ -244,18 +242,20 @@ const unsubscriptionEmail = (context, emailFound, userInfo, padId) => {
       }});
 
     // Send mail to user with the link for validation
-    server.send(
-        {
-          text: 'Please click on this link in order to validate your unsubscription to the pad ' +
-              `${padId}\n${padUrl(padId)}/unsubscribe=${unsubscribeId}`,
-          from: `${fromName} <${fromEmail}>`,
-          to: userInfo.email,
-          subject: `Email unsubscription confirmation for pad ${padId}`,
-        },
-        (err, message) => {
-          console.error(err || message);
-        }
-    );
+    let message;
+    try {
+      message = await util.promisify(server.send.bind(server))({
+        text: 'Please click on this link in order to validate your unsubscription to the pad ' +
+            `${padId}\n${padUrl(padId)}/unsubscribe=${unsubscribeId}`,
+        from: `${fromName} <${fromEmail}>`,
+        to: userInfo.email,
+        subject: `Email unsubscription confirmation for pad ${padId}`,
+      });
+    } catch (err) {
+      console.error(err);
+      return;
+    }
+    console.log(message);
   } else {
     // Unsubscription -> Send failed as email not found
     console.debug(
@@ -332,7 +332,7 @@ const checkEmailValidation = (email) => {
  */
 
 // Write email, options, authorId and pendingId to the database
-const setAuthorEmailRegistered = (userInfo, authorId, subscribeId, padId) => {
+const setAuthorEmailRegistered = async (userInfo, authorId, subscribeId, padId) => {
   const timestamp = new Date().getTime();
   const registered = {
     authorId,
@@ -344,25 +344,24 @@ const setAuthorEmailRegistered = (userInfo, authorId, subscribeId, padId) => {
   console.debug('registered', registered, ' to ', padId);
 
   // Here we have to basically hack a new value into the database, this isn't clean or polite.
-  db.get(`emailSubscription:${padId}`).then((value) => { // get the current value
-    if (!value) {
-      // if an emailSubscription doesnt exist yet for this padId don't panic
-      value = {pending: {}};
-    } else if (!value.pending) {
-      // if the pending section doesn't exist yet for this padId, we create it
-      value.pending = {};
-    }
+  let value = await db.get(`emailSubscription:${padId}`); // get the current value
+  if (!value) {
+    // if an emailSubscription doesnt exist yet for this padId don't panic
+    value = {pending: {}};
+  } else if (!value.pending) {
+    // if the pending section doesn't exist yet for this padId, we create it
+    value.pending = {};
+  }
 
-    // add the registered values to the pending section of the object
-    value.pending[userInfo.email] = registered;
+  // add the registered values to the pending section of the object
+  value.pending[userInfo.email] = registered;
 
-    // Write the modified datas back in the Db
-    db.set(`emailSubscription:${padId}`, value); // stick it in the database
-  });
+  // Write the modified datas back in the Db
+  await db.set(`emailSubscription:${padId}`, value); // stick it in the database
 };
 
 // Write email, authorId and pendingId to the database
-const unsetAuthorEmailRegistered = (userInfo, authorId, unsubscribeId, padId) => {
+const unsetAuthorEmailRegistered = async (userInfo, authorId, unsubscribeId, padId) => {
   const timestamp = new Date().getTime();
   const registered = {
     authorId,
@@ -371,14 +370,13 @@ const unsetAuthorEmailRegistered = (userInfo, authorId, unsubscribeId, padId) =>
   };
   console.debug('unregistered', userInfo.email, ' to ', padId);
 
-  db.get(`emailSubscription:${padId}`).then((value) => { // get the current value
-    // if the pending section doesn't exist yet for this padId, we create it (this shouldn't happen)
-    if (!value.pending) { value.pending = {}; }
+  const value = await db.get(`emailSubscription:${padId}`); // get the current value
+  // if the pending section doesn't exist yet for this padId, we create it (this shouldn't happen)
+  if (!value.pending) { value.pending = {}; }
 
-    // add the registered values to the pending section of the object
-    value.pending[userInfo.email] = registered;
+  // add the registered values to the pending section of the object
+  value.pending[userInfo.email] = registered;
 
-    // Write the modified datas back in the Db
-    db.set(`emailSubscription:${padId}`, value);
-  });
+  // Write the modified datas back in the Db
+  await db.set(`emailSubscription:${padId}`, value);
 };
