@@ -41,15 +41,15 @@ exports.padUpdate = (hookName, _pad) => {
 
   const pad = _pad.pad;
   const padId = pad.id;
-  exports.sendUpdates(padId);
+  sendUpdates(padId);
 
   if (timers[padId]) return; // an interval already exists so don't create
 
   console.debug(`Someone started editing ${padId}`);
-  exports.notifyBegin(padId);
+  notifyBegin(padId);
   console.debug(`Created an interval time check for ${padId}`);
   // if not then create one and write it to the timers object
-  timers[padId] = setInterval(() => exports.sendUpdates(padId), checkFrequency);
+  timers[padId] = setInterval(() => sendUpdates(padId), checkFrequency);
 };
 
 const padUrl = (padId, fmt) => {
@@ -57,7 +57,7 @@ const padUrl = (padId, fmt) => {
   return util.format(fmt, urlToPads + encodeURIComponent(padId));
 };
 
-exports.notifyBegin = (padId) => {
+const notifyBegin = (padId) => {
   console.warn(`Getting pad email stuff for ${padId}`);
   db.get(`emailSubscription:${padId}`).then((recipients) => { // get everyone we need to email
     if (!recipients) return;
@@ -65,7 +65,7 @@ exports.notifyBegin = (padId) => {
       // avoid the 'pending' section
       if (recipient === 'pending') continue;
       // Is this recipient already on the pad?
-      exports.isUserEditingPad(
+      isUserEditingPad(
           padId, recipients[recipient].authorId,
           (err, userIsOnPad) => {
             // is the user already on the pad?
@@ -89,7 +89,7 @@ exports.notifyBegin = (padId) => {
   });
 };
 
-exports.notifyEnd = (padId) => {
+const notifyEnd = (padId) => {
   // TODO: get the modified contents to include in the email
 
   db.get(`emailSubscription:${padId}`).then((recipients) => { // get everyone we need to email
@@ -98,7 +98,7 @@ exports.notifyEnd = (padId) => {
       // avoid the 'pending' section
       if (recipient === 'pending') continue;
       // Is this recipient already on the pad?
-      exports.isUserEditingPad(
+      isUserEditingPad(
           padId, recipients[recipient].authorId, (err, userIsOnPad) => {
             const onEnd = typeof (recipients[recipient].onEnd) === 'undefined' ||
                 recipients[recipient].onEnd ? true : false;
@@ -121,7 +121,7 @@ exports.notifyEnd = (padId) => {
   });
 };
 
-exports.sendUpdates = (padId) => {
+const sendUpdates = (padId) => {
   // check to see if we can delete this interval
   API.getLastEdited(padId).then((message) => {
     // we delete an interval if a pad hasn't been edited in X seconds.
@@ -130,7 +130,7 @@ exports.sendUpdates = (padId) => {
       console.debug('email timeout not stale so not deleting');
       return;
     }
-    exports.notifyEnd(padId);
+    notifyEnd(padId);
     console.warn('Interval went stale so deleting it from object and timer');
     clearInterval(timers[padId]); // remove the interval timer
     delete timers[padId]; // remove the entry from the padId
@@ -140,7 +140,7 @@ exports.sendUpdates = (padId) => {
   // This comes frmo the database
 };
 
-exports.isUserEditingPad = (padId, user, cb) => {
+const isUserEditingPad = (padId, user, cb) => {
   util.callbackify(async () => {
     const {padUsers} = await API.padUsers(padId);
     return padUsers.map((author) => author.id).includes(user);

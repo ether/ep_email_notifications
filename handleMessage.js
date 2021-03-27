@@ -63,7 +63,7 @@ exports.handleMessage = (hookName, context, callback) => {
 
         if (context.message.data.userInfo.email_option === 'subscribe') {
           // Subscription process
-          exports.subscriptionEmail(
+          subscriptionEmail(
               context,
               context.message.data.userInfo.email,
               alreadyExists,
@@ -73,7 +73,7 @@ exports.handleMessage = (hookName, context, callback) => {
           );
         } else if (context.message.data.userInfo.email_option === 'unsubscribe') {
           // Unsubscription process
-          exports.unsubscriptionEmail(
+          unsubscriptionEmail(
               context,
               alreadyExists,
               context.message.data.userInfo,
@@ -85,7 +85,7 @@ exports.handleMessage = (hookName, context, callback) => {
       if (alreadyExists !== false) return;
       if (context.message.data.userInfo.email_option === 'subscribe') {
         // Subscription process
-        exports.subscriptionEmail(
+        subscriptionEmail(
             context,
             context.message.data.userInfo.email,
             alreadyExists,
@@ -95,7 +95,7 @@ exports.handleMessage = (hookName, context, callback) => {
         );
       } else if (context.message.data.userInfo.email_option === 'unsubscribe') {
         // Unsubscription process
-        exports.unsubscriptionEmail(
+        unsubscriptionEmail(
             context,
             alreadyExists,
             context.message.data.userInfo,
@@ -123,7 +123,7 @@ exports.handleMessage = (hookName, context, callback) => {
         userIdFound = true;
 
         // Request user subscription info process
-        exports.sendUserInfo(
+        sendUserInfo(
             context,
             userIdFound,
             user,
@@ -133,7 +133,7 @@ exports.handleMessage = (hookName, context, callback) => {
 
       if (userIdFound === false) {
         // Request user subscription info process
-        exports.sendUserInfo(
+        sendUserInfo(
             context,
             userIdFound,
             '',
@@ -149,15 +149,15 @@ exports.handleMessage = (hookName, context, callback) => {
 /**
  * Subscription process
  */
-exports.subscriptionEmail = (context, email, emailFound, userInfo, padId, callback) => {
-  const validatesAsEmail = exports.checkEmailValidation(email);
+const subscriptionEmail = (context, email, emailFound, userInfo, padId, callback) => {
+  const validatesAsEmail = checkEmailValidation(email);
   const subscribeId = randomString(25);
   if (emailFound === false && validatesAsEmail) {
     // Subscription -> Go for it
     console.debug('Subscription: Wrote to the database and sent client a positive response ',
         context.message.data.userInfo.email);
 
-    exports.setAuthorEmailRegistered(
+    setAuthorEmailRegistered(
         userInfo,
         userInfo.userId,
         subscribeId,
@@ -219,7 +219,7 @@ exports.subscriptionEmail = (context, email, emailFound, userInfo, padId, callba
 /**
  * UnsUbscription process
  */
-exports.unsubscriptionEmail = (context, emailFound, userInfo, padId) => {
+const unsubscriptionEmail = (context, emailFound, userInfo, padId) => {
   const unsubscribeId = randomString(25);
 
   if (emailFound === true) {
@@ -227,7 +227,7 @@ exports.unsubscriptionEmail = (context, emailFound, userInfo, padId) => {
     console.debug('Unsubscription: Remove from the database and sent client a positive response ',
         context.message.data.userInfo.email);
 
-    exports.unsetAuthorEmailRegistered(
+    unsetAuthorEmailRegistered(
         userInfo,
         userInfo.userId,
         unsubscribeId,
@@ -275,7 +275,7 @@ exports.unsubscriptionEmail = (context, emailFound, userInfo, padId) => {
 /**
  * Request user subscription info process
  */
-exports.sendUserInfo = (context, emailFound, email, userInfo) => {
+const sendUserInfo = (context, emailFound, email, userInfo) => {
   const defaultOnStartOption = true;
   const defaultOnEndOption = false;
   let onStart;
@@ -318,7 +318,7 @@ exports.sendUserInfo = (context, emailFound, email, userInfo) => {
 /**
  * Function to check if an email is valid
  */
-exports.checkEmailValidation = (email) => {
+const checkEmailValidation = (email) => {
   const validator = require('validator');
   if (validator.isEmail(email)) {
     return true;
@@ -332,7 +332,7 @@ exports.checkEmailValidation = (email) => {
  */
 
 // Write email, options, authorId and pendingId to the database
-exports.setAuthorEmailRegistered = (userInfo, authorId, subscribeId, padId) => {
+const setAuthorEmailRegistered = (userInfo, authorId, subscribeId, padId) => {
   const timestamp = new Date().getTime();
   const registered = {
     authorId,
@@ -362,7 +362,7 @@ exports.setAuthorEmailRegistered = (userInfo, authorId, subscribeId, padId) => {
 };
 
 // Write email, authorId and pendingId to the database
-exports.unsetAuthorEmailRegistered = (userInfo, authorId, unsubscribeId, padId) => {
+const unsetAuthorEmailRegistered = (userInfo, authorId, unsubscribeId, padId) => {
   const timestamp = new Date().getTime();
   const registered = {
     authorId,
