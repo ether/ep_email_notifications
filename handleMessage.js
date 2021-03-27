@@ -30,128 +30,118 @@ const padUrl = (padId) => urlToPads + encodeURIComponent(padId);
 
 // When a new message comes in from the client - FML this is ugly
 exports.handleMessage = (hookName, context, callback) => {
-  if (context.message && context.message.data) {
-    if (context.message.data.type === 'USERINFO_UPDATE') {
-      // if it's a request to update an authors email
-      if (areParamsOk === false) {
-        context.client.json.send({type: 'COLLABROOM',
-          data: {
-            type: 'emailNotificationMissingParams',
-            payload: true,
-          }});
-        console.error(
-            'Settings for ep_email_notifications plugin are missing in settings.json file');
-        return callback([null]);
-        // don't run onto passing colorId or anything else to the message handler
-      } else if (context.message.data.userInfo) {
-        if (context.message.data.userInfo.email) { // it contains email
-          console.debug(context.message);
-
-          // does email (Un)Subscription already exist for this email address?
-          db.get(`emailSubscription:${context.message.data.padId}`).then((userIds) => {
-            console.debug('emailSubscription');
-
-            let alreadyExists = false;
-
-            for (const user of Object.keys(userIds || {})) {
-              console.debug('UserIds subscribed by email to this pad:', userIds);
-              if (user === context.message.data.userInfo.email) {
-                //  If we already have this email registered for this pad
-                // This user ID is already assigned to this padId so don't do
-                // anything except tell the user they are already subscribed somehow..
-                alreadyExists = true;
-
-                if (context.message.data.userInfo.email_option === 'subscribe') {
-                  // Subscription process
-                  exports.subscriptionEmail(
-                      context,
-                      context.message.data.userInfo.email,
-                      alreadyExists,
-                      context.message.data.userInfo,
-                      context.message.data.padId,
-                      callback
-                  );
-                } else if (context.message.data.userInfo.email_option === 'unsubscribe') {
-                  // Unsubscription process
-                  exports.unsubscriptionEmail(
-                      context,
-                      alreadyExists,
-                      context.message.data.userInfo,
-                      context.message.data.padId
-                  );
-                }
-              }
-            }
-
-            // In case we didn't find it in the Db
-            if (alreadyExists === false) {
-              if (context.message.data.userInfo.email_option === 'subscribe') {
-                // Subscription process
-                exports.subscriptionEmail(
-                    context,
-                    context.message.data.userInfo.email,
-                    alreadyExists,
-                    context.message.data.userInfo,
-                    context.message.data.padId,
-                    callback
-                );
-              } else if (context.message.data.userInfo.email_option === 'unsubscribe') {
-                // Unsubscription process
-                exports.unsubscriptionEmail(
-                    context,
-                    alreadyExists,
-                    context.message.data.userInfo,
-                    context.message.data.padId
-                );
-              }
-            }
-          }); // close db get
-
-          return callback([null]);
-          // don't run onto passing colorId or anything else to the message handler
-        }
-      }
-    } else if (context.message.data.type === 'USERINFO_GET') {
-      // A request to find datas for a userId
-      if (context.message.data.userInfo) {
-        if (context.message.data.userInfo.userId) { // it contains the userId
-          console.debug(context.message);
-
-          // does email Subscription already exist for this UserId?
-          db.get(`emailSubscription:${context.message.data.padId}`).then((userIds) => {
-            let userIdFound = false;
-
-            for (const user of Object.keys(userIds || {})) {
-              if (userIds[user].authorId === context.message.data.userInfo.userId) {
-                //  if we find the same Id in the Db as the one used by the user
-                console.debug(
-                    'Options for this pad ', userIds[user].authorId, ' found in the Db');
-                userIdFound = true;
-
-                // Request user subscription info process
-                exports.sendUserInfo(
-                    context,
-                    userIdFound,
-                    user,
-                    userIds[user]
-                );
-              }
-            }
-
-            if (userIdFound === false) {
-              // Request user subscription info process
-              exports.sendUserInfo(
-                  context,
-                  userIdFound,
-                  '',
-                  ''
-              );
-            }
-          });
-          return callback([null]);
-        }
-      }
+  if (!context.message || !context.message.data) return callback();
+  if (context.message.data.type === 'USERINFO_UPDATE') {
+    // if it's a request to update an authors email
+    if (areParamsOk === false) {
+      context.client.json.send({type: 'COLLABROOM',
+        data: {
+          type: 'emailNotificationMissingParams',
+          payload: true,
+        }});
+      console.error(
+          'Settings for ep_email_notifications plugin are missing in settings.json file');
+      return callback([null]);
+      // don't run onto passing colorId or anything else to the message handler
     }
+    if (!context.message.data.userInfo || !context.message.data.userInfo.email) return callback();
+    console.debug(context.message);
+
+    // does email (Un)Subscription already exist for this email address?
+    db.get(`emailSubscription:${context.message.data.padId}`).then((userIds) => {
+      console.debug('emailSubscription');
+
+      let alreadyExists = false;
+
+      for (const user of Object.keys(userIds || {})) {
+        console.debug('UserIds subscribed by email to this pad:', userIds);
+        if (user !== context.message.data.userInfo.email) continue;
+        //  If we already have this email registered for this pad
+        // This user ID is already assigned to this padId so don't do
+        // anything except tell the user they are already subscribed somehow..
+        alreadyExists = true;
+
+        if (context.message.data.userInfo.email_option === 'subscribe') {
+          // Subscription process
+          exports.subscriptionEmail(
+              context,
+              context.message.data.userInfo.email,
+              alreadyExists,
+              context.message.data.userInfo,
+              context.message.data.padId,
+              callback
+          );
+        } else if (context.message.data.userInfo.email_option === 'unsubscribe') {
+          // Unsubscription process
+          exports.unsubscriptionEmail(
+              context,
+              alreadyExists,
+              context.message.data.userInfo,
+              context.message.data.padId
+          );
+        }
+      }
+
+      if (alreadyExists !== false) return;
+      if (context.message.data.userInfo.email_option === 'subscribe') {
+        // Subscription process
+        exports.subscriptionEmail(
+            context,
+            context.message.data.userInfo.email,
+            alreadyExists,
+            context.message.data.userInfo,
+            context.message.data.padId,
+            callback
+        );
+      } else if (context.message.data.userInfo.email_option === 'unsubscribe') {
+        // Unsubscription process
+        exports.unsubscriptionEmail(
+            context,
+            alreadyExists,
+            context.message.data.userInfo,
+            context.message.data.padId
+        );
+      }
+    }); // close db get
+
+    return callback([null]);
+    // don't run onto passing colorId or anything else to the message handler
+  } else if (context.message.data.type === 'USERINFO_GET') {
+    // A request to find datas for a userId
+    if (!context.message.data.userInfo || !context.message.data.userInfo.userId) return callback();
+    console.debug(context.message);
+
+    // does email Subscription already exist for this UserId?
+    db.get(`emailSubscription:${context.message.data.padId}`).then((userIds) => {
+      let userIdFound = false;
+
+      for (const user of Object.keys(userIds || {})) {
+        if (userIds[user].authorId !== context.message.data.userInfo.userId) continue;
+        //  if we find the same Id in the Db as the one used by the user
+        console.debug(
+            'Options for this pad ', userIds[user].authorId, ' found in the Db');
+        userIdFound = true;
+
+        // Request user subscription info process
+        exports.sendUserInfo(
+            context,
+            userIdFound,
+            user,
+            userIds[user]
+        );
+      }
+
+      if (userIdFound === false) {
+        // Request user subscription info process
+        exports.sendUserInfo(
+            context,
+            userIdFound,
+            '',
+            ''
+        );
+      }
+    });
+    return callback([null]);
   }
   callback();
 };

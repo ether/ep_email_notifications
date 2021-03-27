@@ -24,55 +24,51 @@ exports.registerRoute = (hookName, args, callback) => {
         email,
       };
 
-      if (userIds && userIds.pending) {
-        for (const user of Object.keys(userIds.pending)) {
-          const userInfo = userIds.pending[user];
+      const {pending = {}} = userIds || {};
+      for (const [user, userInfo] of Object.entries(pending)) {
+        //  If we have Id int the Db, then we are good ot really unsubscribe the user
+        if (userInfo[`${action}Id`] !== actionId) continue;
+        console.debug('emailSubscription:', user, 'found in DB:', userInfo);
 
-          //  If we have Id int the Db, then we are good ot really unsubscribe the user
-          if (userInfo[`${action}Id`] === actionId) {
-            console.debug('emailSubscription:', user, 'found in DB:', userInfo);
+        foundInDb = true;
+        email = user;
 
-            foundInDb = true;
-            email = user;
+        // Checking if the demand is not older than 24h
+        const timeDiff = new Date().getTime() - userInfo.timestamp;
+        timeDiffGood = timeDiff < 1000 * 60 * 60 * 24;
 
-            // Checking if the demand is not older than 24h
-            const timeDiff = new Date().getTime() - userInfo.timestamp;
-            timeDiffGood = timeDiff < 1000 * 60 * 60 * 24;
+        if (action === 'subscribe' && timeDiffGood === true) {
+          // Subscription process
+          setAuthorEmail(
+              userInfo,
+              user
+          );
 
-            if (action === 'subscribe' && timeDiffGood === true) {
-              // Subscription process
-              setAuthorEmail(
-                  userInfo,
-                  user
-              );
+          setAuthorEmailRegistered(
+              userIds,
+              userInfo,
+              user,
+              padId
+          );
+        } else if (action === 'unsubscribe' && timeDiffGood === true) {
+          // Unsubscription process
+          unsetAuthorEmail(
+              userInfo,
+              user
+          );
 
-              setAuthorEmailRegistered(
-                  userIds,
-                  userInfo,
-                  user,
-                  padId
-              );
-            } else if (action === 'unsubscribe' && timeDiffGood === true) {
-              // Unsubscription process
-              unsetAuthorEmail(
-                  userInfo,
-                  user
-              );
-
-              unsetAuthorEmailRegistered(
-                  userIds,
-                  user,
-                  padId
-              );
-            }
-
-            resultDb = {
-              foundInDb,
-              timeDiffGood,
-              email: user,
-            };
-          }
+          unsetAuthorEmailRegistered(
+              userIds,
+              user,
+              padId
+          );
         }
+
+        resultDb = {
+          foundInDb,
+          timeDiffGood,
+          email: user,
+        };
       }
 
       // Create and send the output message
@@ -122,13 +118,12 @@ const setAuthorEmailRegistered = (userIds, userInfo, email, padId) => {
 // Updates the database by removing the email record for that AuthorId
 const unsetAuthorEmail = (userInfo, email) => {
   db.get(`globalAuthor:${userInfo.authorId}`).then((value) => { // get the current value
-    if (value.email === email) {
-      // Remove the email option from the datas
-      delete value.email;
+    if (value.email !== email) return;
+    // Remove the email option from the datas
+    delete value.email;
 
-      // Write the modified datas back in the Db
-      db.set(`globalAuthor:${userInfo.authorId}`, value);
-    }
+    // Write the modified datas back in the Db
+    db.set(`globalAuthor:${userInfo.authorId}`, value);
   });
 };
 
@@ -158,17 +153,15 @@ const cleanPendingData = (padId) => {
   db.get(`emailSubscription:${padId}`).then((userIds) => { // get the current value
     console.debug('cleanPendingData: Initial userIds:', userIds);
     modifiedData = userIds;
-    if (userIds && userIds.pending) {
-      for (const user of Object.keys(userIds.pending)) {
-        const timeDiff = new Date().getTime() - userIds.pending[user].timestamp;
-        const timeDiffGood = timeDiff < 1000 * 60 * 60 * 24;
+    const {pending = {}} = userIds || {};
+    for (const user of Object.keys(pending)) {
+      const timeDiff = new Date().getTime() - pending[user].timestamp;
+      const timeDiffGood = timeDiff < 1000 * 60 * 60 * 24;
 
-        if (timeDiffGood === false) {
-          delete modifiedData.pending[user];
+      if (timeDiffGood !== false) continue;
+      delete pending[user];
 
-          areDataModified = true;
-        }
-      }
+      areDataModified = true;
     }
 
     if (areDataModified === true) {

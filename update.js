@@ -43,16 +43,13 @@ exports.padUpdate = (hookName, _pad) => {
   const padId = pad.id;
   exports.sendUpdates(padId);
 
-  // does an interval not exist for this pad?
-  if (!timers[padId]) {
-    console.debug(`Someone started editing ${padId}`);
-    exports.notifyBegin(padId);
-    console.debug(`Created an interval time check for ${padId}`);
-    // if not then create one and write it to the timers object
-    timers[padId] = setInterval(() => exports.sendUpdates(padId), checkFrequency);
-  } else { // an interval already exists so don't create
+  if (timers[padId]) return; // an interval already exists so don't create
 
-  }
+  console.debug(`Someone started editing ${padId}`);
+  exports.notifyBegin(padId);
+  console.debug(`Created an interval time check for ${padId}`);
+  // if not then create one and write it to the timers object
+  timers[padId] = setInterval(() => exports.sendUpdates(padId), checkFrequency);
 };
 
 const padUrl = (padId, fmt) => {
@@ -63,33 +60,31 @@ const padUrl = (padId, fmt) => {
 exports.notifyBegin = (padId) => {
   console.warn(`Getting pad email stuff for ${padId}`);
   db.get(`emailSubscription:${padId}`).then((recipients) => { // get everyone we need to email
-    if (recipients) {
-      for (const recipient of Object.keys(recipients)) {
-        // avoid the 'pending' section
-        if (recipient !== 'pending') {
-          // Is this recipient already on the pad?
-          exports.isUserEditingPad(
-              padId, recipients[recipient].authorId,
-              (err, userIsOnPad) => {
-                // is the user already on the pad?
-                const onStart = typeof (recipients[recipient].onStart) === 'undefined' ||
+    if (!recipients) return;
+    for (const recipient of Object.keys(recipients)) {
+      // avoid the 'pending' section
+      if (recipient === 'pending') continue;
+      // Is this recipient already on the pad?
+      exports.isUserEditingPad(
+          padId, recipients[recipient].authorId,
+          (err, userIsOnPad) => {
+            // is the user already on the pad?
+            const onStart = typeof (recipients[recipient].onStart) === 'undefined' ||
                 recipients[recipient].onStart ? true : false;
-                // In case onStart wasn't defined we set it to true
-                if (!userIsOnPad && onStart) {
-                  console.debug(`Emailing ${recipient} about a new begin update`);
-                  server.send({
-                    text: 'This pad is now being edited:\n' +
-                        `${padUrl(padId, '  <%s>\n')}${emailFooter}`,
-                    from: `${fromName} <${fromEmail}>`,
-                    to: recipient,
-                    subject: `Someone started editing ${padId}`,
-                  }, (err, message) => { console.log(err || message); });
-                } else {
-                  console.debug("Didn't send an email because user is already on the pad");
-                }
-              });
-        }
-      }
+            // In case onStart wasn't defined we set it to true
+            if (userIsOnPad || !onStart) {
+              console.debug("Didn't send an email because user is already on the pad");
+              return;
+            }
+            console.debug(`Emailing ${recipient} about a new begin update`);
+            server.send({
+              text: 'This pad is now being edited:\n' +
+                  `${padUrl(padId, '  <%s>\n')}${emailFooter}`,
+              from: `${fromName} <${fromEmail}>`,
+              to: recipient,
+              subject: `Someone started editing ${padId}`,
+            }, (err, message) => { console.log(err || message); });
+          });
     }
   });
 };
@@ -98,32 +93,30 @@ exports.notifyEnd = (padId) => {
   // TODO: get the modified contents to include in the email
 
   db.get(`emailSubscription:${padId}`).then((recipients) => { // get everyone we need to email
-    if (recipients) {
-      for (const recipient of Object.keys(recipients)) {
-        // avoid the 'pending' section
-        if (recipient !== 'pending') {
-          // Is this recipient already on the pad?
-          exports.isUserEditingPad(
-              padId, recipients[recipient].authorId, (err, userIsOnPad) => {
-                const onEnd = typeof (recipients[recipient].onEnd) === 'undefined' ||
-                    recipients[recipient].onEnd ? true : false;
-                // In case onEnd wasn't defined we set it to false
+    if (!recipients) return;
+    for (const recipient of Object.keys(recipients)) {
+      // avoid the 'pending' section
+      if (recipient === 'pending') continue;
+      // Is this recipient already on the pad?
+      exports.isUserEditingPad(
+          padId, recipients[recipient].authorId, (err, userIsOnPad) => {
+            const onEnd = typeof (recipients[recipient].onEnd) === 'undefined' ||
+                recipients[recipient].onEnd ? true : false;
+            // In case onEnd wasn't defined we set it to false
 
-                if (!userIsOnPad && onEnd) {
-                  console.debug(`Emailing ${recipient} about a pad finished being updated`);
-                  server.send({
-                    text: 'This pad is done being edited:\n' +
-                        `${padUrl(padId, '  <%s>\n')}${emailFooter}`,
-                    from: `${fromName} <${fromEmail}>`,
-                    to: recipient,
-                    subject: `Someone finished editing ${padId}`,
-                  }, (err, message) => { console.log(err || message); });
-                } else {
-                  console.debug("Didn't send an email because user is already on the pad");
-                }
-              });
-        }
-      }
+            if (userIsOnPad || !onEnd) {
+              console.debug("Didn't send an email because user is already on the pad");
+              return;
+            }
+            console.debug(`Emailing ${recipient} about a pad finished being updated`);
+            server.send({
+              text: 'This pad is done being edited:\n' +
+                  `${padUrl(padId, '  <%s>\n')}${emailFooter}`,
+              from: `${fromName} <${fromEmail}>`,
+              to: recipient,
+              subject: `Someone finished editing ${padId}`,
+            }, (err, message) => { console.log(err || message); });
+          });
     }
   });
 };
@@ -133,14 +126,14 @@ exports.sendUpdates = (padId) => {
   API.getLastEdited(padId).then((message) => {
     // we delete an interval if a pad hasn't been edited in X seconds.
     const currTS = new Date().getTime();
-    if (currTS - message.lastEdited > staleTime) {
-      exports.notifyEnd(padId);
-      console.warn('Interval went stale so deleting it from object and timer');
-      clearInterval(timers[padId]); // remove the interval timer
-      delete timers[padId]; // remove the entry from the padId
-    } else {
+    if (currTS - message.lastEdited <= staleTime) {
       console.debug('email timeout not stale so not deleting');
+      return;
     }
+    exports.notifyEnd(padId);
+    console.warn('Interval went stale so deleting it from object and timer');
+    clearInterval(timers[padId]); // remove the interval timer
+    delete timers[padId]; // remove the entry from the padId
   });
   // The status of the users relationship with the pad --
   // IE if it's subscribed to this pad / if it's already on the pad
