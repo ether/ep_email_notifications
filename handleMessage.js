@@ -1,6 +1,6 @@
 'use strict';
 
-const db = require('ep_etherpad-lite/node/db/DB').db;
+const db = require('ep_etherpad-lite/node/db/DB');
 const email = require('emailjs');
 const randomString = require('ep_etherpad-lite/static/js/pad_utils').randomString;
 const settings = require('ep_etherpad-lite/node/utils/Settings');
@@ -48,7 +48,7 @@ exports.handleMessage = (hookName, context, callback) => {
           console.debug(context.message);
 
           // does email (Un)Subscription already exist for this email address?
-          db.get(`emailSubscription:${context.message.data.padId}`, (err, userIds) => {
+          db.get(`emailSubscription:${context.message.data.padId}`).then((userIds) => {
             console.debug('emailSubscription');
 
             let alreadyExists = false;
@@ -118,7 +118,7 @@ exports.handleMessage = (hookName, context, callback) => {
           console.debug(context.message);
 
           // does email Subscription already exist for this UserId?
-          db.get(`emailSubscription:${context.message.data.padId}`, (err, userIds) => {
+          db.get(`emailSubscription:${context.message.data.padId}`).then((userIds) => {
             let userIdFound = false;
 
             for (const user of Object.keys(userIds || {})) {
@@ -354,7 +354,7 @@ exports.setAuthorEmailRegistered = (userInfo, authorId, subscribeId, padId) => {
   console.debug('registered', registered, ' to ', padId);
 
   // Here we have to basically hack a new value into the database, this isn't clean or polite.
-  db.get(`emailSubscription:${padId}`, (err, value) => { // get the current value
+  db.get(`emailSubscription:${padId}`).then((value) => { // get the current value
     if (!value) {
       // if an emailSubscription doesnt exist yet for this padId don't panic
       value = {pending: {}};
@@ -381,7 +381,7 @@ exports.unsetAuthorEmailRegistered = (userInfo, authorId, unsubscribeId, padId) 
   };
   console.debug('unregistered', userInfo.email, ' to ', padId);
 
-  db.get(`emailSubscription:${padId}`, (err, value) => { // get the current value
+  db.get(`emailSubscription:${padId}`).then((value) => { // get the current value
     // if the pending section doesn't exist yet for this padId, we create it (this shouldn't happen)
     if (!value.pending) { value.pending = {}; }
 

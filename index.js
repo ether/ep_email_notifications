@@ -1,11 +1,11 @@
 'use strict';
 
-const db = require('ep_etherpad-lite/node/db/DB').db;
+const db = require('ep_etherpad-lite/node/db/DB');
 const fs = require('fs');
 const settings = require('ep_etherpad-lite/node/utils/Settings');
 
 // Remove cache for this procedure
-db.dbSettings.cache = 0;
+db.db.dbSettings.cache = 0;
 
 exports.registerRoute = (hookName, args, callback) => {
   // Catching (un)subscribe addresses
@@ -14,7 +14,7 @@ exports.registerRoute = (hookName, args, callback) => {
     const {padId, action, actionId} = req.params;
     const padURL = settings.ep_email_notifications.urlToPads + encodeURIComponent(padId);
 
-    db.get(`emailSubscription:${padId}`, (err, userIds) => {
+    db.get(`emailSubscription:${padId}`).then((userIds) => {
       let foundInDb = false;
       let timeDiffGood = false;
       let email = 'your email';
@@ -121,7 +121,7 @@ const setAuthorEmailRegistered = (userIds, userInfo, email, padId) => {
 
 // Updates the database by removing the email record for that AuthorId
 const unsetAuthorEmail = (userInfo, email) => {
-  db.get(`globalAuthor:${userInfo.authorId}`, (err, value) => { // get the current value
+  db.get(`globalAuthor:${userInfo.authorId}`).then((value) => { // get the current value
     if (value.email === email) {
       // Remove the email option from the datas
       delete value.email;
@@ -155,7 +155,7 @@ const cleanPendingData = (padId) => {
   let modifiedData; let
     areDataModified = false;
 
-  db.get(`emailSubscription:${padId}`, (err, userIds) => { // get the current value
+  db.get(`emailSubscription:${padId}`).then((userIds) => { // get the current value
     console.debug('cleanPendingData: Initial userIds:', userIds);
     modifiedData = userIds;
     if (userIds && userIds.pending) {

@@ -2,7 +2,7 @@
 
 // Main job is to check pads periodically for activity and notify owners when
 // someone begins editing and when someone finishes.
-const db = require('ep_etherpad-lite/node/db/DB').db;
+const db = require('ep_etherpad-lite/node/db/DB');
 const API = require('ep_etherpad-lite/node/db/API.js');
 const email = require('emailjs');
 const settings = require('ep_etherpad-lite/node/utils/Settings');
@@ -62,7 +62,7 @@ const padUrl = (padId, fmt) => {
 
 exports.notifyBegin = (padId) => {
   console.warn(`Getting pad email stuff for ${padId}`);
-  db.get(`emailSubscription:${padId}`, (err, recipients) => { // get everyone we need to email
+  db.get(`emailSubscription:${padId}`).then((recipients) => { // get everyone we need to email
     if (recipients) {
       for (const recipient of Object.keys(recipients)) {
         // avoid the 'pending' section
@@ -97,7 +97,7 @@ exports.notifyBegin = (padId) => {
 exports.notifyEnd = (padId) => {
   // TODO: get the modified contents to include in the email
 
-  db.get(`emailSubscription:${padId}`, (err, recipients) => { // get everyone we need to email
+  db.get(`emailSubscription:${padId}`).then((recipients) => { // get everyone we need to email
     if (recipients) {
       for (const recipient of Object.keys(recipients)) {
         // avoid the 'pending' section
