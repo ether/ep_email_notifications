@@ -10,14 +10,10 @@ db.dbSettings.cache = 0;
 
 exports.registerRoute = (hookName, args, callback) => {
   // Catching (un)subscribe addresses
-  args.app.get(/\/p\/.*\/(un){0,1}subscribe=(.*)/, (req, res) => {
+  args.app.get('/p/:padId/:action(subscribe|unsubscribe)=:actionId([\\s\\S]{0,})', (req, res) => {
     console.warn('HERE');
-    const path = decodeURI(req.url).split('/');
-    const padId = path[2];
-    const param = path[3].split('=');
-    const action = param[0];
-    const actionId = param[1];
-    const padURL = settings.ep_email_notifications.urlToPads + padId;
+    const {padId, action, actionId} = req.params;
+    const padURL = settings.ep_email_notifications.urlToPads + encodeURIComponent(padId);
 
     async.waterfall(
         [
@@ -249,7 +245,7 @@ const sendContent = (res, args, action, padId, padURL, resultDb) => {
       .replace(/<%classResult%>/, classResult)
       .replace(/<%result%>/, resultMsg)
       .replace(/<%explanation%>/, msgCause)
-      .replace(/<%padUrl%>/g, encodeURI(padURL));
+      .replace(/<%padUrl%>/g, padURL);
 
   res.contentType('text/html; charset=utf-8');
   res.send(args.content); // Send it to the requester*/

@@ -26,6 +26,8 @@ if (areParamsOk === false) {
 // This might not be the ideal place to connect but it stops us having lots of connections
 const server = new SMTPClient(emailServer);
 
+const padUrl = (padId) => urlToPads + encodeURIComponent(padId);
+
 // When a new message comes in from the client - FML this is ugly
 exports.handleMessage = (hookName, context, callback) => {
   if (context.message && context.message.data) {
@@ -186,7 +188,7 @@ exports.subscriptionEmail = (context, email, emailFound, userInfo, padId, callba
     server.send(
         {
           text: 'Please click on this link in order to validate your subscription to the pad ' +
-              `${padId}\n${urlToPads}${encodeURI(padId)}/subscribe=${subscribeId}`,
+              `${padId}\n${padUrl(padId)}/subscribe=${subscribeId}`,
           from: `${fromName} <${fromEmail}>`,
           to: userInfo.email,
           subject: `Email subscription confirmation for pad ${padId}`,
@@ -255,7 +257,7 @@ exports.unsubscriptionEmail = (context, emailFound, userInfo, padId) => {
     server.send(
         {
           text: 'Please click on this link in order to validate your unsubscription to the pad ' +
-              `${padId}\n${urlToPads}${padId}/unsubscribe=${unsubscribeId}`,
+              `${padId}\n${padUrl(padId)}/unsubscribe=${unsubscribeId}`,
           from: `${fromName} <${fromEmail}>`,
           to: userInfo.email,
           subject: `Email unsubscription confirmation for pad ${padId}`,

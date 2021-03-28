@@ -57,7 +57,7 @@ exports.padUpdate = (hookName, _pad) => {
 
 const padUrl = (padId, fmt) => {
   fmt = fmt || '%s';
-  return util.format(fmt, urlToPads + padId);
+  return util.format(fmt, urlToPads + encodeURIComponent(padId));
 };
 
 exports.notifyBegin = (padId) => {
