@@ -3,11 +3,6 @@
 const eejs = require('ep_etherpad-lite/node/eejs');
 const settings = require('ep_etherpad-lite/node/utils/Settings');
 
-exports.eejsBlock_scripts = (hookName, args, cb) => {
-  args.content += eejs.require('ep_email_notifications/templates/scripts.html', {}, module);
-  cb();
-};
-
 exports.eejsBlock_mySettings = (hookName, args, cb) => {
   args.content += eejs.require('ep_email_notifications/templates/email_notifications_settings.ejs');
   cb();
