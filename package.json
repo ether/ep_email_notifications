@@ -15,7 +15,7 @@
     }
   ],
   "dependencies": {
-    "emailjs": "3.3.0",
+    "emailjs": "5.0.0",
     "validator": "13.15.35"
   },
   "engines": {
