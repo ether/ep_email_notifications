@@ -14,7 +14,7 @@ exports.registerRoute = (hookName, args, callback) => {
     const {padId, action, actionId} = req.params;
     const padURL = settings.ep_email_notifications.urlToPads + encodeURIComponent(padId);
 
-    const userIds = await db.get(`emailSubscription:${padId}`);
+    const userIds = await db.get(`emailSubscription:${padId}`) || {};
     let foundInDb = false;
     let timeDiffGood = false;
     let email = 'your email';
