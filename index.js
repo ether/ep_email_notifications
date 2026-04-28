@@ -54,8 +54,16 @@ exports.registerRoute = (hookName, args, callback) => {
     // Take a moment to clean all obsolete pending data
     await cleanPendingData(padId);
   };
-  args.app.get('/p/:padId/:action(subscribe|unsubscribe)=:actionId([\\s\\S]{0,})',
-      (req, res, next) => handle(req, res).catch((err) => next(err || new Error(err))));
+  // Express 5 / path-to-regexp v6 doesn't accept inline regex like
+  // `:action(subscribe|unsubscribe)=:actionId([\\s\\S]{0,})`, so use a
+  // regular expression route and extract the unnamed capture groups.
+  args.app.get(/^\/p\/([^/]+)\/(subscribe|unsubscribe)=([\s\S]+)$/,
+      (req, res, next) => {
+        req.params.padId = req.params[0];
+        req.params.action = req.params[1];
+        req.params.actionId = req.params[2];
+        return handle(req, res).catch((err) => next(err || new Error(err)));
+      });
 
   callback(); // Am I even called?
 };
