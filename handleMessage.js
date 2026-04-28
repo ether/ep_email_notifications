@@ -35,7 +35,7 @@ exports.handleMessage = async (hookName, context) => {
   if (context.message.data.type === 'USERINFO_UPDATE') {
     // if it's a request to update an authors email
     if (!pluginSettings) {
-      context.client.json.send({
+      context.socket.emit("message", {
         type: 'COLLABROOM',
         data: {
           type: 'emailNotificationMissingParams',
@@ -142,7 +142,7 @@ const subscriptionEmail = async (context, email, emailFound, userInfo, padId) =>
     await setAuthorEmailRegistered(userInfo, userInfo.userId, subscribeId, padId);
 
     console.debug('emailSubSucc');
-    context.client.json.send({
+    context.socket.emit("message", {
       type: 'COLLABROOM',
       data: {
         type: 'emailSubscriptionSuccess',
@@ -171,7 +171,7 @@ const subscriptionEmail = async (context, email, emailFound, userInfo, padId) =>
   } else if (!validatesAsEmail) {
     // Subscription -> failed coz mail malformed..  y'know in general fuck em!
     console.debug('Dropped email subscription due to malformed email address');
-    context.client.json.send({
+    context.socket.emit("message", {
       type: 'COLLABROOM',
       data: {
         type: 'emailSubscriptionSuccess',
@@ -187,7 +187,7 @@ const subscriptionEmail = async (context, email, emailFound, userInfo, padId) =>
     console.debug('email ', context.message.data.userInfo.email,
         'already subscribed to ', context.message.data.padId, ' so sending message to client');
 
-    context.client.json.send({
+    context.socket.emit("message", {
       type: 'COLLABROOM',
       data: {
         type: 'emailSubscriptionSuccess',
@@ -214,7 +214,7 @@ const unsubscriptionEmail = async (context, emailFound, userInfo, padId) => {
 
     await unsetAuthorEmailRegistered(userInfo, userInfo.userId, unsubscribeId, padId);
 
-    context.client.json.send({
+    context.socket.emit("message", {
       type: 'COLLABROOM',
       data: {
         type: 'emailUnsubscriptionSuccess',
@@ -245,7 +245,7 @@ const unsubscriptionEmail = async (context, emailFound, userInfo, padId) => {
     console.debug(
         'Unsubscription: Send client a negative response ', context.message.data.userInfo.email);
 
-    context.client.json.send({
+    context.socket.emit("message", {
       type: 'COLLABROOM',
       data: {
         type: 'emailUnsubscriptionSuccess',
@@ -265,7 +265,7 @@ const sendUserInfo = (context, emailFound, email, userInfo) => {
   const {onStart = true, onEnd = false} = userInfo;
   if (emailFound) {
     // We send back the options associated to this userId
-    context.client.json.send({
+    context.socket.emit("message", {
       type: 'COLLABROOM',
       data: {
         type: 'emailNotificationGetUserInfo',
@@ -280,7 +280,7 @@ const sendUserInfo = (context, emailFound, email, userInfo) => {
     });
   } else {
     // No options set for this userId
-    context.client.json.send({
+    context.socket.emit("message", {
       type: 'COLLABROOM',
       data: {
         type: 'emailNotificationGetUserInfo',
