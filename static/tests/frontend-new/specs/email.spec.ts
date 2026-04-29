@@ -26,12 +26,18 @@ test.describe('ep_email_notifications', () => {
         if (!el) throw new Error(`field ${name} not found`);
         el.checked = checked;
       }, {name, checked});
+  // Trigger the click through jQuery so the plugin's $().on('click', …)
+  // handlers fire reliably regardless of whether the form is hidden.
+  // A native el.click() also works for jQuery handlers, but the plugin's
+  // checkAndSend reads e.currentTarget.parentNode and does jQuery DOM
+  // walks afterwards that depend on jQuery's event normalization.
   const clickField = (page: any, name: string) => page.evaluate(
       (name: string) => {
-        const el = document.querySelector<HTMLElement>(
-            `#ep_email_form_mysettings [name=${name}]`);
-        if (!el) throw new Error(`field ${name} not found`);
-        el.click();
+        const w = window as any;
+        if (!w.$) throw new Error('jQuery not on window');
+        const $el = w.$(`#ep_email_form_mysettings [name=${name}]`);
+        if (!$el.length) throw new Error(`field ${name} not found`);
+        $el.trigger('click');
       }, name);
   const openSettings = (page: any) => page.evaluate(
       () => document.querySelector<HTMLElement>('.buttonicon-settings')!.click());
