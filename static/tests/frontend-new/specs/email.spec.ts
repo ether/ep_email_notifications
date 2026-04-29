@@ -52,6 +52,14 @@ test.describe('ep_email_notifications', () => {
 
   test('subscribe with no notification options shows missing-options notice', async ({page}) => {
     await openSettings(page);
+    // CI runs without ep_email_notifications config in settings.json, so
+    // the plugin sets clientVars.ep_email_missing=true and shows its
+    // own params-missing gritter. In that mode the menu is also hidden,
+    // making the missing-options assertion meaningless. Skip with the
+    // same guard the other tests in this file use.
+    const missing = await page.evaluate(
+        () => (window as any).clientVars && (window as any).clientVars.ep_email_missing);
+    if (missing) test.skip(true, 'email settings not configured');
     await fillField(page, 'ep_email', goodEmail);
     await setCheck(page, 'ep_email_onStart', false);
     await setCheck(page, 'ep_email_onEnd', false);
