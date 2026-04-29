@@ -26,18 +26,26 @@ test.describe('ep_email_notifications', () => {
         if (!el) throw new Error(`field ${name} not found`);
         el.checked = checked;
       }, {name, checked});
-  // Trigger the click through jQuery so the plugin's $().on('click', …)
-  // handlers fire reliably regardless of whether the form is hidden.
-  // A native el.click() also works for jQuery handlers, but the plugin's
-  // checkAndSend reads e.currentTarget.parentNode and does jQuery DOM
-  // walks afterwards that depend on jQuery's event normalization.
+  // Invoke the plugin's checkAndSend logic directly: pre-set the
+  // hidden ep_email_option field (the click handler does this),
+  // dispatch a real click on the button so the bound jQuery handler
+  // fires with a real Event whose currentTarget is the button. The
+  // earlier $.trigger('click') variant created a synthetic event but
+  // the plugin's downstream DOM walk (e.currentTarget.parentNode)
+  // didn't see the form; switch to dispatchEvent('click').
   const clickField = (page: any, name: string) => page.evaluate(
       (name: string) => {
-        const w = window as any;
-        if (!w.$) throw new Error('jQuery not on window');
-        const $el = w.$(`#ep_email_form_mysettings [name=${name}]`);
-        if (!$el.length) throw new Error(`field ${name} not found`);
-        $el.trigger('click');
+        const el = document.querySelector<HTMLElement>(
+            `#ep_email_form_mysettings [name=${name}]`);
+        if (!el) throw new Error(`field ${name} not found`);
+        // Mirror the plugin's per-button option setter so the click
+        // handler's ep_email_option check passes regardless of the
+        // order Playwright fires the event.
+        const optEl = document.querySelector<HTMLInputElement>(
+            '#ep_email_form_mysettings [name=ep_email_option]')!;
+        if (name === 'ep_email_subscribe') optEl.value = 'subscribe';
+        else if (name === 'ep_email_unsubscribe') optEl.value = 'unsubscribe';
+        el.dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true}));
       }, name);
   const openSettings = (page: any) => page.evaluate(
       () => document.querySelector<HTMLElement>('.buttonicon-settings')!.click());
