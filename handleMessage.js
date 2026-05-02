@@ -33,7 +33,14 @@ const padUrl = (padId) => urlToPads + encodeURIComponent(padId);
 exports.handleMessage = async (hookName, context) => {
   if (!context.message || !context.message.data) return;
   if (context.message.data.type === 'USERINFO_UPDATE') {
-    // if it's a request to update an authors email
+    // USERINFO_UPDATE is also how Etherpad core ships username and color
+    // changes. Only intercept when this is actually an email
+    // subscribe/unsubscribe — otherwise let core handle it. Returning
+    // [null] (or running our own logic and stalling) on plain username
+    // updates clobbered every authoring-name change in pads where this
+    // plugin was installed without ep_email_notifications settings.
+    const userInfo = context.message.data.userInfo;
+    if (!userInfo || !userInfo.email || !userInfo.email_option) return;
     if (!pluginSettings) {
       context.socket.emit("message", {
         type: 'COLLABROOM',
@@ -44,9 +51,7 @@ exports.handleMessage = async (hookName, context) => {
       });
       console.error('Settings for ep_email_notifications plugin are missing in settings.json file');
       return [null];
-      // don't run onto passing colorId or anything else to the message handler
     }
-    if (!context.message.data.userInfo || !context.message.data.userInfo.email) return;
     console.debug(context.message);
 
     // does email (Un)Subscription already exist for this email address?
