@@ -86,6 +86,19 @@ test.describe('ep_email_notifications', () => {
         .toHaveText('Email Notifications', {timeout: 30_000});
   });
 
+  // The 10s auto-popup used to clone the mysettings form into the gritter
+  // text field. Newer jquery-gritter escapes that field, so the popup
+  // rendered as raw HTML. The popup is now a simple text nudge — assert
+  // it stays that way.
+  test('auto-popup is text-only and contains no embedded form', async ({page}) => {
+    await waitForPluginReady(page);
+    const popup = page.locator('.emailNotificationsPopupForm');
+    await expect(popup).toBeVisible({timeout: 15_000});
+    await expect(popup).toContainText('Email subscription');
+    await expect(popup).toContainText('Get an email notification when someone else edits this pad');
+    await expect(popup.locator('form')).toHaveCount(0);
+  });
+
   test('subscribe with malformed email is rejected', async ({page}) => {
     await waitForPluginReady(page);
     await openSettings(page);
