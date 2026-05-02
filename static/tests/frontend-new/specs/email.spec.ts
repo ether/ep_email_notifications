@@ -65,8 +65,25 @@ test.describe('ep_email_notifications', () => {
     // checkAndSend short-circuits with no server round-trip when no options are
     // checked, so this assertion holds in CI even without ep_email_notifications
     // configured in settings.json.
-    await expect(page.locator('.emailNotificationsSubscrOptionsMissing'))
-        .toHaveCount(1, {timeout: 30_000});
+    const gritter = page.locator('.emailNotificationsSubscrOptionsMissing');
+    await expect(gritter).toHaveCount(1, {timeout: 30_000});
+    // Assert the localized strings rendered, not just that the gritter exists.
+    // window._ in core is an unbound reference to html10n.get, so naïvely
+    // calling window._('key') returns undefined and the gritter would render
+    // with title "× undefined" and missing text — which the count check
+    // wouldn't catch. en.json values are reproduced verbatim here so a
+    // localization regression breaks this test instead of the user.
+    await expect(gritter).toContainText('Email subscription error');
+    await expect(gritter).toContainText('You need to check at least one checkbox.');
+  });
+
+  // The mysettings menu label is rendered server-side and translated via html10n's
+  // data-l10n-id pass; assert that ep_email_notifications.* keys actually resolve
+  // on this page so a future locale-loading regression is loud.
+  test('mysettings menu label is localized', async ({page}) => {
+    await waitForPluginReady(page);
+    await expect(page.locator('label[for="options-emailNotifications"]'))
+        .toHaveText('Email Notifications', {timeout: 30_000});
   });
 
   test('subscribe with malformed email is rejected', async ({page}) => {
