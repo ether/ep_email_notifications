@@ -3,6 +3,21 @@
 const cookie = require('ep_etherpad-lite/static/js/pad_cookie').padcookie;
 let optionsAlreadyRecovered = false;
 
+// Etherpad core sets `_ = html10n.get` (an unbound reference). Calling
+// `_('key')` puts `this = window` inside the get implementation, so
+// `this.translations` is `undefined` and the function falls into its
+// "No translations available (yet)" branch and returns undefined — every
+// time, regardless of whether translations have actually loaded. Newer
+// jquery-gritter versions validate the `text` parameter and reject calls
+// where it's undefined, so all of this plugin's $.gritter.add calls would
+// silently fail to render. Use a properly-bound localizer instead.
+const _ = (key) => {
+  const h = window.html10n;
+  if (!h || typeof h.get !== 'function') return key;
+  const out = h.get.call(h, key);
+  return out == null ? key : out;
+};
+
 exports.postAceInit = (hook, context) => {
   // If panelDisplayLocation setting is missing, set default value
   if (typeof clientVars.panelDisplayLocation !== 'object') {
@@ -71,10 +86,6 @@ exports.handleClientMessage_emailSubscriptionSuccess = (hook, context) => {
       $('#options-emailNotifications').prop('checked', false);
     }
 
-    if (clientVars.panelDisplayLocation.popup === true &&
-          $('#ep_email_form_popup').is(':visible')) {
-      $('#ep_email_form_popup').parent().parent().parent().hide();
-    }
   }
 };
 
@@ -95,10 +106,6 @@ exports.handleClientMessage_emailUnsubscriptionSuccess = (hook, context) => {
       $('#options-emailNotifications').prop('checked', false);
     }
 
-    if (clientVars.panelDisplayLocation.popup === true &&
-          $('#ep_email_form_popup').is(':visible')) {
-      $('#ep_email_form_popup').parent().parent().parent().hide();
-    }
   }
 };
 
@@ -133,9 +140,9 @@ exports.handleClientMessage_emailNotificationMissingParams = (hook, context) => 
   if (context.payload === true) {
     $.gritter.add({
       // (string | mandatory) the heading of the notification
-      title: `× ${window._('ep_email_notifications.titleGritterError')}`,
+      title: `× ${_('ep_email_notifications.titleGritterError')}`,
       // (string | mandatory) the text inside the notification
-      text: window._('ep_email_notifications.msgParamsMissing'),
+      text: _('ep_email_notifications.msgParamsMissing'),
       // (bool | optional) if you want it to fade out on its own or just sit there
       sticky: true,
       // (string | optional) add a class name to the gritter msg
@@ -151,88 +158,24 @@ exports.handleClientMessage_emailNotificationMissingParams = (hook, context) => 
     }
 
     // Hide the popup if it is visible
-    if (clientVars.panelDisplayLocation.popup === true &&
-          $('#ep_email_form_popup').is(':visible')) {
-      $('#ep_email_form_popup').parent().parent().parent().hide();
-    }
   }
 };
 
 /**
- * Initialize the popup panel form for subscription
+ * Nudge the user toward Settings → Email Notifications. Earlier versions
+ * of this plugin tried to clone the entire mysettings form into the
+ * gritter `text` field, but newer jquery-gritter escapes that text so
+ * the popup rendered as raw HTML. The form already lives in the user
+ * settings panel — point people there instead.
  */
 const initPopupForm = () => {
-  const popUpIsAlreadyVisible = $('#ep_email_form_popup').is(':visible');
-  if (!popUpIsAlreadyVisible) { // if the popup isn't already visible
-    const cookieVal = `${pad.getPadId()}email`;
-    if (cookie.getPref(cookieVal) !== 'true') { // if this user hasn't already subscribed
-      askClientToEnterEmail(); // ask the client to register TODO uncomment me for a pop up
-    }
-  }
-};
-/*
-const clientHasAlreadyRegistered = () => {
-  // Has the client already registered for emails on this?
-  // Given a specific AuthorID do we have an email address in the database?
-  // Given that email address is it registered to this pad?
-  // need to pass the server a message to check
-  const userId = pad.getUserId();
-  const message = {};
-  message.type = 'USERINFO_AUTHOR_EMAIL_IS_REGISTERED_TO_PAD';
-  message.userInfo = {};
-  message.userInfo.userId = userId;
-  pad.collabClient.sendMessage(message);
-};
-*/
-
-const askClientToEnterEmail = () => {
-  const formContent = $('.ep_email_settings')
-      .html()
-      .replace('ep_email_form_mysettings', 'ep_email_form_popup');
-
+  const cookieVal = `${pad.getPadId()}email`;
+  if (cookie.getPref(cookieVal) === 'true') return;
   $.gritter.add({
-    // (string | mandatory) the heading of the notification
-    title: `× ${window._('ep_email_notifications.titleGritterSubscr')}`,
-    // (string | mandatory) the text inside the notification
-    text: `<p class='ep_email_form_popup_header'>
-          ${window._('ep_email_notifications.headerGritterSubscr')}
-        </p>${formContent}`,
-    // (bool | optional) if you want it to fade out on its own or just sit there
+    title: `× ${_('ep_email_notifications.titleGritterSubscr')}`,
+    text: _('ep_email_notifications.headerGritterSubscr'),
     sticky: true,
-    // (string | optional) add a class name to the gritter msg
     class_name: 'emailNotificationsPopupForm',
-    // the function to bind to the form
-    after_open: (e) => {
-      $('#ep_email_form_popup').submit(() => {
-        sendEmailToServer('ep_email_form_popup');
-        return false;
-      });
-
-      // Prepare subscription before submit form
-      $('#ep_email_form_popup [name=ep_email_subscribe]').on('click', (e) => {
-        $('#ep_email_form_popup [name=ep_email_option]').val('subscribe');
-        checkAndSend(e);
-      });
-
-      // Prepare unsubscription before submit form
-      $('#ep_email_form_popup [name=ep_email_unsubscribe]').on('click', (e) => {
-        $('#ep_email_form_popup [name=ep_email_option]').val('unsubscribe');
-        checkAndSend(e);
-      });
-
-      if (optionsAlreadyRecovered === false) {
-        getDataForUserId('ep_email_form_popup');
-      } else {
-        // Get datas from form in mysettings menu
-        $('#ep_email_form_popup [name=ep_email]')
-            .val($('#ep_email_form_mysettings [name=ep_email]').val());
-        $('#ep_email_form_popup [name=ep_email_onStart]')
-            .prop('checked', $('#ep_email_form_mysettings [name=ep_email_onStart]')
-                .prop('checked'));
-        $('#ep_email_form_popup [name=ep_email_onEnd]')
-            .prop('checked', $('#ep_email_form_mysettings [name=ep_email_onEnd]').prop('checked'));
-      }
-    },
   });
 };
 
@@ -249,9 +192,9 @@ const checkAndSend = (e) => {
       !$(`#${formName} [name=ep_email_onEnd]`).is(':checked')) {
     $.gritter.add({
       // (string | mandatory) the heading of the notification
-      title: `× ${window._('ep_email_notifications.titleGritterError')}`,
+      title: `× ${_('ep_email_notifications.titleGritterError')}`,
       // (string | mandatory) the text inside the notification
-      text: window._('ep_email_notifications.msgOptionsNotChecked'),
+      text: _('ep_email_notifications.msgOptionsNotChecked'),
       // (string | optional) add a class name to the gritter msg
       class_name: 'emailNotificationsSubscrOptionsMissing',
     });
@@ -308,9 +251,9 @@ Manage return msgs from server
 const showRegistrationSuccess = () => {
   $.gritter.add({
     // (string | mandatory) the heading of the notification
-    title: `× ${window._('ep_email_notifications.titleGritterSubscr')}`,
+    title: `× ${_('ep_email_notifications.titleGritterSubscr')}`,
     // (string | mandatory) the text inside the notification
-    text: window._('ep_email_notifications.msgSubscrSuccess'),
+    text: _('ep_email_notifications.msgSubscrSuccess'),
     // (int | optional) the time you want it to be alive for before fading out
     time: 10000,
     // (string | optional) add a class name to the gritter msg
@@ -324,15 +267,15 @@ const showRegistrationSuccess = () => {
 const showAlreadyRegistered = (type) => {
   let msg;
   if (type === 'malformedEmail') {
-    msg = window._('ep_email_notifications.msgEmailMalformed');
+    msg = _('ep_email_notifications.msgEmailMalformed');
   } else if (type === 'alreadyRegistered') {
-    msg = window._('ep_email_notifications.msgAlreadySubscr');
+    msg = _('ep_email_notifications.msgAlreadySubscr');
   } else {
-    msg = window._('ep_email_notifications.msgUnknownErr');
+    msg = _('ep_email_notifications.msgUnknownErr');
   }
   $.gritter.add({
     // (string | mandatory) the heading of the notification
-    title: `× ${window._('ep_email_notifications.titleGritterSubscr')}`,
+    title: `× ${_('ep_email_notifications.titleGritterSubscr')}`,
     // (string | mandatory) the text inside the notification
     text: msg,
     // (int | optional) the time you want it to be alive for before fading out
@@ -348,9 +291,9 @@ const showAlreadyRegistered = (type) => {
 const showUnregistrationSuccess = () => {
   $.gritter.add({
     // (string | mandatory) the heading of the notification
-    title: `× ${window._('ep_email_notifications.titleGritterUnsubscr')}`,
+    title: `× ${_('ep_email_notifications.titleGritterUnsubscr')}`,
     // (string | mandatory) the text inside the notification
-    text: window._('ep_email_notifications.msgUnsubscrSuccess'),
+    text: _('ep_email_notifications.msgUnsubscrSuccess'),
     // (int | optional) the time you want it to be alive for before fading out
     time: 10000,
     // (string | optional) add a class name to the gritter msg
@@ -364,9 +307,9 @@ const showUnregistrationSuccess = () => {
 const showWasNotRegistered = () => {
   $.gritter.add({
     // (string | mandatory) the heading of the notification
-    title: `× ${window._('ep_email_notifications.titleGritterUnsubscr')}`,
+    title: `× ${_('ep_email_notifications.titleGritterUnsubscr')}`,
     // (string | mandatory) the text inside the notification
-    text: window._('ep_email_notifications.msgUnsubscrNotExisting'),
+    text: _('ep_email_notifications.msgUnsubscrNotExisting'),
     // (int | optional) the time you want it to be alive for before fading out
     time: 7000,
     // (string | optional) add a class name to the gritter msg
