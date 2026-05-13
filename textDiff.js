@@ -8,12 +8,14 @@ const splitLines = (text) => {
     : normalized.split('\n');
 };
 
+const MAX_DIFF_LINES = 1000;
+
 module.exports = (beforeText, afterText) => {
   const before = splitLines(beforeText);
   const after = splitLines(afterText);
   if (before.length === after.length &&
       before.every((line, index) => line === after[index])) return '';
-  if (before.length > 1000 || after.length > 1000) {
+  if (before.length > MAX_DIFF_LINES || after.length > MAX_DIFF_LINES) {
     return before.map((line) => `-${line}`).concat(after.map((line) => `+${line}`)).join('\n');
   }
 
