@@ -9,14 +9,21 @@ const splitLines = (text) => {
 };
 
 const MAX_DIFF_LINES = 1000;
+const MAX_DIFF_CELLS = 500000;
+const MAX_FALLBACK_CHANGES = 400;
 
 module.exports = (beforeText, afterText) => {
   const before = splitLines(beforeText);
   const after = splitLines(afterText);
   if (before.length === after.length &&
       before.every((line, index) => line === after[index])) return '';
-  if (before.length > MAX_DIFF_LINES || after.length > MAX_DIFF_LINES) {
-    return before.map((line) => `-${line}`).concat(after.map((line) => `+${line}`)).join('\n');
+  if (before.length > MAX_DIFF_LINES ||
+      after.length > MAX_DIFF_LINES ||
+      before.length * after.length > MAX_DIFF_CELLS) {
+    const halfLimit = Math.floor(MAX_FALLBACK_CHANGES / 2);
+    return before.slice(0, halfLimit).map((line) => `-${line}`)
+        .concat(after.slice(0, halfLimit).map((line) => `+${line}`))
+        .join('\n');
   }
 
   const lcs = Array.from({length: before.length + 1}, () => Array(after.length + 1).fill(0));

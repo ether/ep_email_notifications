@@ -36,7 +36,17 @@ const server = new SMTPClient(emailServer);
 
 const emailFooter = "\nYou can unsubscribe from these emails in the pad's Settings window.\n";
 
-exports.padUpdate = (hookName, _pad) => {
+const getPadText = async (padId) => {
+  try {
+    const {text = ''} = await API.getText(padId);
+    return text;
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
+};
+
+exports.padUpdate = async (hookName, _pad) => {
   if (!pluginSettings) return false;
 
   const pad = _pad.pad;
@@ -45,9 +55,10 @@ exports.padUpdate = (hookName, _pad) => {
 
   if (timers[padId]) return; // an interval already exists so don't create
 
+  const startText = await getPadText(padId);
   timers[padId] = {
     interval: setInterval(() => sendUpdates(padId), checkFrequency),
-    startText: '',
+    startText,
   };
   console.debug(`Someone started editing ${padId}`);
   notifyBegin(padId);
@@ -58,13 +69,6 @@ exports.padUpdate = (hookName, _pad) => {
 const padUrl = (padId) => urlToPads + encodeURIComponent(padId);
 
 const notifyBegin = async (padId) => {
-  try {
-    const {text = ''} = await API.getText(padId);
-    if (timers[padId]) timers[padId].startText = text;
-  } catch (err) {
-    console.error(err);
-  }
-
   console.warn(`Getting pad email stuff for ${padId}`);
   const recipients = await db.get(`emailSubscription:${padId}`); // get everyone we need to email
   if (!recipients) return;
@@ -99,11 +103,13 @@ const notifyBegin = async (padId) => {
 
 const notifyEnd = async (padId, startText = '') => {
   let diffText = '';
-  try {
-    const {text = ''} = await API.getText(padId);
-    diffText = textDiff(startText, text);
-  } catch (err) {
-    console.error(err);
+  if (typeof startText === 'string') {
+    try {
+      const {text = ''} = await API.getText(padId);
+      diffText = textDiff(startText, text);
+    } catch (err) {
+      console.error(err);
+    }
   }
   const changesSection = diffText ? `\n${diffText}\n` : '';
 
@@ -149,7 +155,7 @@ const sendUpdates = async (padId) => {
   }
   console.warn('Interval went stale so deleting it from object and timer');
   const timer = timers[padId];
-  const startText = timer ? timer.startText : '';
+  const startText = timer ? timer.startText : null;
   if (timer) clearInterval(timer.interval); // remove the interval timer
   delete timers[padId]; // remove the entry from the padId
   await notifyEnd(padId, startText);
