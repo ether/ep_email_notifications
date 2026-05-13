@@ -18,6 +18,8 @@ const urlToPads = (pluginSettings && pluginSettings.urlToPads)
   ? pluginSettings.urlToPads : 'http://beta.etherpad.org/p/';
 const emailServer = (pluginSettings && pluginSettings.emailServer)
   ? pluginSettings.emailServer : {host: '127.0.0.1'};
+const messageSettings = (pluginSettings && pluginSettings.messages) || {};
+const {renderTemplate} = require('./messageUtils');
 
 if (!pluginSettings) {
   console.warn('Settings for ep_email_notifications plugin are missing in settings.json file');
@@ -159,14 +161,25 @@ const subscriptionEmail = async (context, email, emailFound, userInfo, padId) =>
     });
 
     // Send mail to user with the link for validation
+    const confirmLink = `${padUrl(padId)}/subscribe=${subscribeId}`;
+    const vars = {padId, padUrl: padUrl(padId), confirmLink};
+    const subject = renderTemplate(
+        messageSettings.subscribeSubject != null
+          ? messageSettings.subscribeSubject
+          : 'Email subscription confirmation for pad {padId}',
+        vars);
+    const text = renderTemplate(
+        messageSettings.subscribeBody != null
+          ? messageSettings.subscribeBody
+          : 'Please click on this link in order to validate your subscription to the pad {padId}\n{confirmLink}',
+        vars);
     let message;
     try {
       message = await util.promisify(server.send.bind(server))({
-        text: 'Please click on this link in order to validate your subscription to the pad ' +
-            `${padId}\n${padUrl(padId)}/subscribe=${subscribeId}`,
+        text,
         from: `${fromName} <${fromEmail}>`,
         to: userInfo.email,
-        subject: `Email subscription confirmation for pad ${padId}`,
+        subject,
       });
     } catch (err) {
       console.error(err);
@@ -231,14 +244,25 @@ const unsubscriptionEmail = async (context, emailFound, userInfo, padId) => {
     });
 
     // Send mail to user with the link for validation
+    const confirmLink = `${padUrl(padId)}/unsubscribe=${unsubscribeId}`;
+    const vars = {padId, padUrl: padUrl(padId), confirmLink};
+    const subject = renderTemplate(
+        messageSettings.unsubscribeSubject != null
+          ? messageSettings.unsubscribeSubject
+          : 'Email unsubscription confirmation for pad {padId}',
+        vars);
+    const text = renderTemplate(
+        messageSettings.unsubscribeBody != null
+          ? messageSettings.unsubscribeBody
+          : 'Please click on this link in order to validate your unsubscription to the pad {padId}\n{confirmLink}',
+        vars);
     let message;
     try {
       message = await util.promisify(server.send.bind(server))({
-        text: 'Please click on this link in order to validate your unsubscription to the pad ' +
-            `${padId}\n${padUrl(padId)}/unsubscribe=${unsubscribeId}`,
+        text,
         from: `${fromName} <${fromEmail}>`,
         to: userInfo.email,
-        subject: `Email unsubscription confirmation for pad ${padId}`,
+        subject,
       });
     } catch (err) {
       console.error(err);
