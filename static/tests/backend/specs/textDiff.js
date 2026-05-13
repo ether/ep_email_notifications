@@ -22,4 +22,12 @@ describe('textDiff', function () {
         '-line two\n+line three',
     );
   });
+
+  it('falls back to simple add/remove output for large texts', async function () {
+    const before = Array.from({length: 1001}, (_, i) => `before-${i}`).join('\n');
+    const after = Array.from({length: 1001}, (_, i) => `after-${i}`).join('\n');
+    const diff = textDiff(before, after);
+    assert(diff.includes('-before-0'));
+    assert(diff.includes('+after-1000'));
+  });
 });

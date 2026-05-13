@@ -13,6 +13,9 @@ module.exports = (beforeText, afterText) => {
   const after = splitLines(afterText);
   if (before.length === after.length &&
       before.every((line, index) => line === after[index])) return '';
+  if (before.length > 1000 || after.length > 1000) {
+    return before.map((line) => `-${line}`).concat(after.map((line) => `+${line}`)).join('\n');
+  }
 
   const lcs = Array.from({length: before.length + 1}, () => Array(after.length + 1).fill(0));
   for (let beforeIdx = 1; beforeIdx <= before.length; beforeIdx++) {

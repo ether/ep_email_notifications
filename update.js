@@ -97,18 +97,15 @@ const notifyBegin = async (padId) => {
   }));
 };
 
-const notifyEnd = async (padId) => {
+const notifyEnd = async (padId, startText = '') => {
   let diffText = '';
   try {
-    const startText = timers[padId] ? timers[padId].startText : '';
     const {text = ''} = await API.getText(padId);
     diffText = textDiff(startText, text);
   } catch (err) {
     console.error(err);
   }
-  const changesSection = diffText
-    ? `\nChanges:\n${diffText}\n`
-    : '\nChanges:\n(no text changes detected)\n';
+  const changesSection = diffText ? `\n${diffText}\n` : '';
 
   const recipients = await db.get(`emailSubscription:${padId}`); // get everyone we need to email
   if (!recipients) return;
@@ -152,9 +149,10 @@ const sendUpdates = async (padId) => {
   }
   console.warn('Interval went stale so deleting it from object and timer');
   const timer = timers[padId];
+  const startText = timer ? timer.startText : '';
   if (timer) clearInterval(timer.interval); // remove the interval timer
-  await notifyEnd(padId);
   delete timers[padId]; // remove the entry from the padId
+  await notifyEnd(padId, startText);
   // The status of the users relationship with the pad --
   // IE if it's subscribed to this pad / if it's already on the pad
   // This comes frmo the database
