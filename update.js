@@ -152,7 +152,7 @@ const sendUpdates = async (padId) => {
   }
   console.warn('Interval went stale so deleting it from object and timer');
   const timer = timers[padId];
-  clearInterval(timer && timer.interval); // remove the interval timer
+  if (timer) clearInterval(timer.interval); // remove the interval timer
   await notifyEnd(padId);
   delete timers[padId]; // remove the entry from the padId
   // The status of the users relationship with the pad --

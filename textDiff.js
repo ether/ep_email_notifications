@@ -24,21 +24,24 @@ module.exports = (beforeText, afterText) => {
   }
 
   const changes = [];
-  let i = before.length;
-  let j = after.length;
-  while (i > 0 || j > 0) {
-    if (i > 0 && j > 0 && before[i - 1] === after[j - 1]) {
-      i--;
-      j--;
+  let beforeIndex = before.length;
+  let afterIndex = after.length;
+  while (beforeIndex > 0 || afterIndex > 0) {
+    if (beforeIndex > 0 && afterIndex > 0 &&
+        before[beforeIndex - 1] === after[afterIndex - 1]) {
+      beforeIndex--;
+      afterIndex--;
       continue;
     }
-    if (j > 0 && (i === 0 || lcs[i][j - 1] >= lcs[i - 1][j])) {
-      changes.push(`+${after[j - 1]}`);
-      j--;
+    if (afterIndex > 0 &&
+        (beforeIndex === 0 ||
+         lcs[beforeIndex][afterIndex - 1] >= lcs[beforeIndex - 1][afterIndex])) {
+      changes.push(`+${after[afterIndex - 1]}`);
+      afterIndex--;
       continue;
     }
-    changes.push(`-${before[i - 1]}`);
-    i--;
+    changes.push(`-${before[beforeIndex - 1]}`);
+    beforeIndex--;
   }
 
   return changes.reverse().join('\n');
