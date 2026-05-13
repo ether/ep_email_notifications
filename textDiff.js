@@ -15,11 +15,11 @@ module.exports = (beforeText, afterText) => {
       before.every((line, index) => line === after[index])) return '';
 
   const lcs = Array.from({length: before.length + 1}, () => Array(after.length + 1).fill(0));
-  for (let i = 1; i <= before.length; i++) {
-    for (let j = 1; j <= after.length; j++) {
-      lcs[i][j] = before[i - 1] === after[j - 1]
-        ? lcs[i - 1][j - 1] + 1
-        : Math.max(lcs[i - 1][j], lcs[i][j - 1]);
+  for (let beforeIdx = 1; beforeIdx <= before.length; beforeIdx++) {
+    for (let afterIdx = 1; afterIdx <= after.length; afterIdx++) {
+      lcs[beforeIdx][afterIdx] = before[beforeIdx - 1] === after[afterIdx - 1]
+        ? lcs[beforeIdx - 1][afterIdx - 1] + 1
+        : Math.max(lcs[beforeIdx - 1][afterIdx], lcs[beforeIdx][afterIdx - 1]);
     }
   }
 
