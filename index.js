@@ -4,9 +4,6 @@ const db = require('ep_etherpad-lite/node/db/DB');
 const fs = require('fs').promises;
 const settings = require('ep_etherpad-lite/node/utils/Settings');
 
-// Remove cache for this procedure
-db.db.dbSettings.cache = 0;
-
 exports.registerRoute = (hookName, args, callback) => {
   // Catching (un)subscribe addresses
   const handle = async (req, res) => {
