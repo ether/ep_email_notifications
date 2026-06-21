@@ -6,6 +6,7 @@ const db = require('ep_etherpad-lite/node/db/DB');
 const API = require('ep_etherpad-lite/node/db/API');
 const email = require('emailjs');
 const settings = require('ep_etherpad-lite/node/utils/Settings');
+const {getNotificationEmail} = require('./emailTemplates');
 const util = require('util');
 
 const SMTPClient = email.SMTPClient;
@@ -32,8 +33,6 @@ const timers = {};
 // but it stops us having lots of connections
 
 const server = new SMTPClient(emailServer);
-
-const emailFooter = "\nYou can unsubscribe from these emails in the pad's Settings window.\n";
 
 exports.padUpdate = (hookName, _pad) => {
   if (!pluginSettings) return false;
@@ -72,11 +71,17 @@ const notifyBegin = async (padId) => {
     console.debug(`Emailing ${recipient} about a new begin update`);
     let message;
     try {
+      const localizedEmail = getNotificationEmail({
+        event: 'start',
+        locale: recipients[recipient].locale,
+        padId,
+        padUrl: padUrl(padId),
+      });
       message = await util.promisify(server.send.bind(server))({
-        text: `This pad is now being edited:\n  <${padUrl(padId)}>\n${emailFooter}`,
+        text: localizedEmail.text,
         from: `${fromName} <${fromEmail}>`,
         to: recipient,
-        subject: `Someone started editing ${padId}`,
+        subject: localizedEmail.subject,
       });
     } catch (err) {
       console.error(err);
@@ -106,11 +111,17 @@ const notifyEnd = async (padId) => {
     console.debug(`Emailing ${recipient} about a pad finished being updated`);
     let message;
     try {
+      const localizedEmail = getNotificationEmail({
+        event: 'end',
+        locale: recipients[recipient].locale,
+        padId,
+        padUrl: padUrl(padId),
+      });
       message = await util.promisify(server.send.bind(server))({
-        text: `This pad is done being edited:\n  <${padUrl(padId)}>\n${emailFooter}`,
+        text: localizedEmail.text,
         from: `${fromName} <${fromEmail}>`,
         to: recipient,
-        subject: `Someone finished editing ${padId}`,
+        subject: localizedEmail.subject,
       });
     } catch (err) {
       console.error(err);
