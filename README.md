@@ -32,9 +32,29 @@ NOTE: You will NOT receive an email if you(the author that registered their emai
     "urlToPads": "http://beta.etherpad.org/p/", // urlToPads = The URL to your pads note the trailing /
     "emailServer": { // See https://github.com/eleith/emailjs for settings
       "host": "127.0.0.1"
+    },
+    "messages": { // All fields are optional; omit any to use the built-in default
+      "footer": "\nYou can unsubscribe from these emails in the pad's Settings window.\n",
+      "beginSubject": "Someone started editing {padId}",
+      "beginBody": "This pad is now being edited:\n  <{padUrl}>\n{footer}",
+      "endSubject": "Someone finished editing {padId}",
+      "endBody": "This pad is done being edited:\n  <{padUrl}>\n{footer}",
+      "subscribeSubject": "Email subscription confirmation for pad {padId}",
+      "subscribeBody": "Please click on this link in order to validate your subscription to the pad {padId}\n{confirmLink}",
+      "unsubscribeSubject": "Email unsubscription confirmation for pad {padId}",
+      "unsubscribeBody": "Please click on this link in order to validate your unsubscription to the pad {padId}\n{confirmLink}"
     }
   }
 ```
+
+Supported placeholders in `messages` templates:
+
+| Placeholder | Available in | Description |
+|---|---|---|
+| `{padId}` | all | The pad's identifier |
+| `{padUrl}` | all | Full URL to the pad |
+| `{footer}` | `beginBody`, `endBody` | The configured (or default) footer text |
+| `{confirmLink}` | `subscribeBody`, `unsubscribeBody` | The one-click confirmation URL |
 
 # Translation
 This plugin has for now translations for english, french and german.

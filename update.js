@@ -24,6 +24,8 @@ const urlToPads = (pluginSettings && pluginSettings.urlToPads)
   ? pluginSettings.urlToPads : 'http://beta.etherpad.org/p/';
 const emailServer = (pluginSettings && pluginSettings.emailServer)
   ? pluginSettings.emailServer : {host: '127.0.0.1'};
+const messageSettings = (pluginSettings && pluginSettings.messages) || {};
+const {renderTemplate} = require('./messageUtils');
 
 // A timer object we maintain to control how we send emails
 const timers = {};
@@ -33,7 +35,9 @@ const timers = {};
 
 const server = new SMTPClient(emailServer);
 
-const emailFooter = "\nYou can unsubscribe from these emails in the pad's Settings window.\n";
+const emailFooter = messageSettings.footer != null
+  ? messageSettings.footer
+  : "\nYou can unsubscribe from these emails in the pad's Settings window.\n";
 
 exports.padUpdate = (hookName, _pad) => {
   if (!pluginSettings) return false;
@@ -70,13 +74,24 @@ const notifyBegin = async (padId) => {
       return;
     }
     console.debug(`Emailing ${recipient} about a new begin update`);
+    const vars = {padId, padUrl: padUrl(padId), footer: emailFooter};
+    const subject = renderTemplate(
+        messageSettings.beginSubject != null
+          ? messageSettings.beginSubject
+          : 'Someone started editing {padId}',
+        vars);
+    const text = renderTemplate(
+        messageSettings.beginBody != null
+          ? messageSettings.beginBody
+          : 'This pad is now being edited:\n  <{padUrl}>\n{footer}',
+        vars);
     let message;
     try {
       message = await util.promisify(server.send.bind(server))({
-        text: `This pad is now being edited:\n  <${padUrl(padId)}>\n${emailFooter}`,
+        text,
         from: `${fromName} <${fromEmail}>`,
         to: recipient,
-        subject: `Someone started editing ${padId}`,
+        subject,
       });
     } catch (err) {
       console.error(err);
@@ -104,13 +119,24 @@ const notifyEnd = async (padId) => {
       return;
     }
     console.debug(`Emailing ${recipient} about a pad finished being updated`);
+    const vars = {padId, padUrl: padUrl(padId), footer: emailFooter};
+    const subject = renderTemplate(
+        messageSettings.endSubject != null
+          ? messageSettings.endSubject
+          : 'Someone finished editing {padId}',
+        vars);
+    const text = renderTemplate(
+        messageSettings.endBody != null
+          ? messageSettings.endBody
+          : 'This pad is done being edited:\n  <{padUrl}>\n{footer}',
+        vars);
     let message;
     try {
       message = await util.promisify(server.send.bind(server))({
-        text: `This pad is done being edited:\n  <${padUrl(padId)}>\n${emailFooter}`,
+        text,
         from: `${fromName} <${fromEmail}>`,
         to: recipient,
-        subject: `Someone finished editing ${padId}`,
+        subject,
       });
     } catch (err) {
       console.error(err);
