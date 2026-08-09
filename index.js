@@ -80,6 +80,7 @@ const setAuthorEmailRegistered = async (userIds, userInfo, email, padId) => {
   const timestamp = new Date().getTime();
   const registered = {
     authorId: userInfo.authorId,
+    locale: userInfo.locale,
     onStart: userInfo.onStart,
     onEnd: userInfo.onEnd,
     timestamp,

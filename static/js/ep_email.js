@@ -85,7 +85,6 @@ exports.handleClientMessage_emailSubscriptionSuccess = (hook, context) => {
       $('.ep_email_settings').slideToggle();
       $('#options-emailNotifications').prop('checked', false);
     }
-
   }
 };
 
@@ -105,7 +104,6 @@ exports.handleClientMessage_emailUnsubscriptionSuccess = (hook, context) => {
       $('.ep_email_settings').slideToggle();
       $('#options-emailNotifications').prop('checked', false);
     }
-
   }
 };
 
@@ -219,6 +217,7 @@ const sendEmailToServer = (formName) => {
   message.userInfo.email_onStart = $(`#${formName} [name=ep_email_onStart]`).is(':checked');
   message.userInfo.email_onEnd = $(`#${formName} [name=ep_email_onEnd]`).is(':checked');
   message.userInfo.formName = formName;
+  message.userInfo.language = document.documentElement.lang || navigator.language || 'en';
   message.userInfo.userId = userId;
   if (email) {
     pad.collabClient.sendMessage(message);

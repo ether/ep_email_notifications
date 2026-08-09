@@ -16,4 +16,13 @@
 , "ep_email_notifications.formOptionOnEnd": "a fini d\u2019\u00e9diter le pad"
 , "ep_email_notifications.formBtnSubscr": "inscription"
 , "ep_email_notifications.formBtnUnsubscr": "d\u00e9sinscription"
+, "ep_email_notifications.emailFooter": "Vous pouvez vous d\u00e9sinscrire de ces e-mails dans la fen\u00eatre des param\u00e8tres du pad."
+, "ep_email_notifications.emailNotificationStartSubject": "Quelqu\u2019un a commenc\u00e9 \u00e0 modifier {padId}"
+, "ep_email_notifications.emailNotificationStartBody": "Ce pad est en cours de modification :\n  <{padUrl}>\n{footer}"
+, "ep_email_notifications.emailNotificationEndSubject": "Quelqu\u2019un a termin\u00e9 la modification de {padId}"
+, "ep_email_notifications.emailNotificationEndBody": "La modification de ce pad est termin\u00e9e :\n  <{padUrl}>\n{footer}"
+, "ep_email_notifications.emailSubscriptionConfirmationSubject": "Confirmation d\u2019inscription par e-mail pour le pad {padId}"
+, "ep_email_notifications.emailSubscriptionConfirmationBody": "Veuillez cliquer sur ce lien pour valider votre inscription au pad {padId}\n{actionUrl}"
+, "ep_email_notifications.emailUnsubscriptionConfirmationSubject": "Confirmation de d\u00e9sinscription par e-mail pour le pad {padId}"
+, "ep_email_notifications.emailUnsubscriptionConfirmationBody": "Veuillez cliquer sur ce lien pour valider votre d\u00e9sinscription du pad {padId}\n{actionUrl}"
 }
