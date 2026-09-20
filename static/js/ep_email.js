@@ -85,7 +85,6 @@ exports.handleClientMessage_emailSubscriptionSuccess = (hook, context) => {
       $('.ep_email_settings').slideToggle();
       $('#options-emailNotifications').prop('checked', false);
     }
-
   }
 };
 
@@ -105,7 +104,6 @@ exports.handleClientMessage_emailUnsubscriptionSuccess = (hook, context) => {
       $('.ep_email_settings').slideToggle();
       $('#options-emailNotifications').prop('checked', false);
     }
-
   }
 };
 
