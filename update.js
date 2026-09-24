@@ -7,6 +7,7 @@ const API = require('ep_etherpad-lite/node/db/API');
 const email = require('emailjs');
 const settings = require('ep_etherpad-lite/node/utils/Settings');
 const util = require('util');
+const validator = require('validator');
 
 const SMTPClient = email.SMTPClient;
 
@@ -55,7 +56,7 @@ const padUrl = (padId) => urlToPads + encodeURIComponent(padId);
 
 const notifyBegin = async (padId) => {
   console.warn(`Getting pad email stuff for ${padId}`);
-  const recipients = await db.get(`emailSubscription:${padId}`); // get everyone we need to email
+  const recipients = await db.get('emailSubscription:' + padId); // get everyone we need to email
   if (!recipients) return;
   await Promise.all(Object.keys(recipients).map(async (recipient) => {
     // avoid the 'pending' section
@@ -69,7 +70,11 @@ const notifyBegin = async (padId) => {
       console.debug("Didn't send an email because user is already on the pad");
       return;
     }
-    console.debug(`Emailing ${recipient} about a new begin update`);
+    if (!validator.isEmail(recipient)) {
+      console.error(`Refusing to email malformed recipient address: ${recipient}`);
+      return;
+    }
+    console.debug('Emailing ' + recipient + ' about a new begin update');
     let message;
     try {
       message = await util.promisify(server.send.bind(server))({
@@ -89,7 +94,7 @@ const notifyBegin = async (padId) => {
 const notifyEnd = async (padId) => {
   // TODO: get the modified contents to include in the email
 
-  const recipients = await db.get(`emailSubscription:${padId}`); // get everyone we need to email
+  const recipients = await db.get('emailSubscription:' + padId); // get everyone we need to email
   if (!recipients) return;
   await Promise.all(Object.keys(recipients).map(async (recipient) => {
     // avoid the 'pending' section
@@ -103,7 +108,11 @@ const notifyEnd = async (padId) => {
       console.debug("Didn't send an email because user is already on the pad");
       return;
     }
-    console.debug(`Emailing ${recipient} about a pad finished being updated`);
+    if (!validator.isEmail(recipient)) {
+      console.error(`Refusing to email malformed recipient address: ${recipient}`);
+      return;
+    }
+    console.debug('Emailing ' + recipient + ' about a pad finished being updated');
     let message;
     try {
       message = await util.promisify(server.send.bind(server))({
