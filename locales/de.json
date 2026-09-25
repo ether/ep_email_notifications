@@ -16,4 +16,13 @@
 , "ep_email_notifications.formOptionOnEnd": "aufhört, das Pad zu bearbeiten"
 , "ep_email_notifications.formBtnSubscr": "Anmelden"
 , "ep_email_notifications.formBtnUnsubscr": "Abmelden"
+, "ep_email_notifications.emailFooter": "Sie können diese E-Mails im Einstellungsfenster des Pads abbestellen."
+, "ep_email_notifications.emailNotificationStartSubject": "Jemand hat mit der Bearbeitung von {padId} begonnen"
+, "ep_email_notifications.emailNotificationStartBody": "Dieses Pad wird gerade bearbeitet:\n  <{padUrl}>\n{footer}"
+, "ep_email_notifications.emailNotificationEndSubject": "Jemand hat die Bearbeitung von {padId} beendet"
+, "ep_email_notifications.emailNotificationEndBody": "Dieses Pad wird nicht mehr bearbeitet:\n  <{padUrl}>\n{footer}"
+, "ep_email_notifications.emailSubscriptionConfirmationSubject": "Bestätigung der E-Mail-Anmeldung für Pad {padId}"
+, "ep_email_notifications.emailSubscriptionConfirmationBody": "Bitte klicken Sie auf diesen Link, um Ihre Anmeldung für das Pad {padId} zu bestätigen\n{actionUrl}"
+, "ep_email_notifications.emailUnsubscriptionConfirmationSubject": "Bestätigung der E-Mail-Abmeldung für Pad {padId}"
+, "ep_email_notifications.emailUnsubscriptionConfirmationBody": "Bitte klicken Sie auf diesen Link, um Ihre Abmeldung vom Pad {padId} zu bestätigen\n{actionUrl}"
 }
