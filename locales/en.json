@@ -16,4 +16,13 @@
 , "ep_email_notifications.formOptionOnEnd": "finishes editing this pad"
 , "ep_email_notifications.formBtnSubscr": "Subscribe"
 , "ep_email_notifications.formBtnUnsubscr": "Unsubscribe"
+, "ep_email_notifications.emailFooter": "You can unsubscribe from these emails in the pad's Settings window."
+, "ep_email_notifications.emailNotificationStartSubject": "Someone started editing {padId}"
+, "ep_email_notifications.emailNotificationStartBody": "This pad is now being edited:\n  <{padUrl}>\n{footer}"
+, "ep_email_notifications.emailNotificationEndSubject": "Someone finished editing {padId}"
+, "ep_email_notifications.emailNotificationEndBody": "This pad is done being edited:\n  <{padUrl}>\n{footer}"
+, "ep_email_notifications.emailSubscriptionConfirmationSubject": "Email subscription confirmation for pad {padId}"
+, "ep_email_notifications.emailSubscriptionConfirmationBody": "Please click on this link in order to validate your subscription to the pad {padId}\n{actionUrl}"
+, "ep_email_notifications.emailUnsubscriptionConfirmationSubject": "Email unsubscription confirmation for pad {padId}"
+, "ep_email_notifications.emailUnsubscriptionConfirmationBody": "Please click on this link in order to validate your unsubscription to the pad {padId}\n{actionUrl}"
 }
