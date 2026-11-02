@@ -7,6 +7,7 @@ const API = require('ep_etherpad-lite/node/db/API');
 const email = require('emailjs');
 const settings = require('ep_etherpad-lite/node/utils/Settings');
 const util = require('util');
+const textDiff = require('./textDiff');
 
 const SMTPClient = email.SMTPClient;
 
@@ -35,7 +36,17 @@ const server = new SMTPClient(emailServer);
 
 const emailFooter = "\nYou can unsubscribe from these emails in the pad's Settings window.\n";
 
-exports.padUpdate = (hookName, _pad) => {
+const getPadText = async (padId) => {
+  try {
+    const {text = ''} = await API.getText(padId);
+    return text;
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
+};
+
+exports.padUpdate = async (hookName, _pad) => {
   if (!pluginSettings) return false;
 
   const pad = _pad.pad;
@@ -44,11 +55,15 @@ exports.padUpdate = (hookName, _pad) => {
 
   if (timers[padId]) return; // an interval already exists so don't create
 
+  const startText = await getPadText(padId);
+  timers[padId] = {
+    interval: setInterval(() => sendUpdates(padId), checkFrequency),
+    startText,
+  };
   console.debug(`Someone started editing ${padId}`);
   notifyBegin(padId);
   console.debug(`Created an interval time check for ${padId}`);
   // if not then create one and write it to the timers object
-  timers[padId] = setInterval(() => sendUpdates(padId), checkFrequency);
 };
 
 const padUrl = (padId) => urlToPads + encodeURIComponent(padId);
@@ -86,8 +101,17 @@ const notifyBegin = async (padId) => {
   }));
 };
 
-const notifyEnd = async (padId) => {
-  // TODO: get the modified contents to include in the email
+const notifyEnd = async (padId, startText = '') => {
+  let diffText = '';
+  if (typeof startText === 'string') {
+    try {
+      const {text = ''} = await API.getText(padId);
+      diffText = textDiff(startText, text);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  const changesSection = diffText ? `\n${diffText}\n` : '';
 
   const recipients = await db.get(`emailSubscription:${padId}`); // get everyone we need to email
   if (!recipients) return;
@@ -107,7 +131,7 @@ const notifyEnd = async (padId) => {
     let message;
     try {
       message = await util.promisify(server.send.bind(server))({
-        text: `This pad is done being edited:\n  <${padUrl(padId)}>\n${emailFooter}`,
+        text: `This pad is done being edited:\n  <${padUrl(padId)}>${changesSection}${emailFooter}`,
         from: `${fromName} <${fromEmail}>`,
         to: recipient,
         subject: `Someone finished editing ${padId}`,
@@ -130,9 +154,11 @@ const sendUpdates = async (padId) => {
     return;
   }
   console.warn('Interval went stale so deleting it from object and timer');
-  clearInterval(timers[padId]); // remove the interval timer
+  const timer = timers[padId];
+  const startText = timer ? timer.startText : null;
+  if (timer) clearInterval(timer.interval); // remove the interval timer
   delete timers[padId]; // remove the entry from the padId
-  await notifyEnd(padId);
+  await notifyEnd(padId, startText);
   // The status of the users relationship with the pad --
   // IE if it's subscribed to this pad / if it's already on the pad
   // This comes frmo the database
