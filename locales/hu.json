@@ -16,4 +16,13 @@
 , "ep_email_notifications.formOptionOnEnd": "befejezi a jegyzetfüzet szerkesztését"
 , "ep_email_notifications.formBtnSubscr": "feliratkozás"
 , "ep_email_notifications.formBtnUnsubscr": "leiratkozás"
+, "ep_email_notifications.emailFooter": "Ezekről az e-mailekről a pad Beállítások ablakában tud leiratkozni."
+, "ep_email_notifications.emailNotificationStartSubject": "Valaki elkezdte szerkeszteni ezt: {padId}"
+, "ep_email_notifications.emailNotificationStartBody": "Ezt a padet most szerkesztik:\n  <{padUrl}>\n{footer}"
+, "ep_email_notifications.emailNotificationEndSubject": "Valaki befejezte ennek a szerkesztését: {padId}"
+, "ep_email_notifications.emailNotificationEndBody": "Ennek a padnek a szerkesztése befejeződött:\n  <{padUrl}>\n{footer}"
+, "ep_email_notifications.emailSubscriptionConfirmationSubject": "{padId} pad e-mailes feliratkozásának megerősítése"
+, "ep_email_notifications.emailSubscriptionConfirmationBody": "Kattintson erre a hivatkozásra, hogy megerősítse a {padId} padra való feliratkozását\n{actionUrl}"
+, "ep_email_notifications.emailUnsubscriptionConfirmationSubject": "{padId} pad e-mailes leiratkozásának megerősítése"
+, "ep_email_notifications.emailUnsubscriptionConfirmationBody": "Kattintson erre a hivatkozásra, hogy megerősítse a {padId} padról való leiratkozását\n{actionUrl}"
 }

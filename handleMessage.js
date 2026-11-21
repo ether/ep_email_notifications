@@ -4,6 +4,10 @@ const db = require('ep_etherpad-lite/node/db/DB');
 const email = require('emailjs');
 const randomString = require('ep_etherpad-lite/static/js/pad_utils').randomString;
 const settings = require('ep_etherpad-lite/node/utils/Settings');
+const {
+  getConfirmationEmail,
+  getUserLocale,
+} = require('./emailTemplates');
 const util = require('util');
 const validator = require('validator');
 
@@ -161,12 +165,18 @@ const subscriptionEmail = async (context, email, emailFound, userInfo, padId) =>
     // Send mail to user with the link for validation
     let message;
     try {
+      const localizedEmail = getConfirmationEmail({
+        action: 'subscribe',
+        locale: getUserLocale(userInfo),
+        padId,
+        padUrl: padUrl(padId),
+        token: subscribeId,
+      });
       message = await util.promisify(server.send.bind(server))({
-        text: 'Please click on this link in order to validate your subscription to the pad ' +
-            `${padId}\n${padUrl(padId)}/subscribe=${subscribeId}`,
+        text: localizedEmail.text,
         from: `${fromName} <${fromEmail}>`,
         to: userInfo.email,
-        subject: `Email subscription confirmation for pad ${padId}`,
+        subject: localizedEmail.subject,
       });
     } catch (err) {
       console.error(err);
@@ -233,12 +243,18 @@ const unsubscriptionEmail = async (context, emailFound, userInfo, padId) => {
     // Send mail to user with the link for validation
     let message;
     try {
+      const localizedEmail = getConfirmationEmail({
+        action: 'unsubscribe',
+        locale: getUserLocale(userInfo),
+        padId,
+        padUrl: padUrl(padId),
+        token: unsubscribeId,
+      });
       message = await util.promisify(server.send.bind(server))({
-        text: 'Please click on this link in order to validate your unsubscription to the pad ' +
-            `${padId}\n${padUrl(padId)}/unsubscribe=${unsubscribeId}`,
+        text: localizedEmail.text,
         from: `${fromName} <${fromEmail}>`,
         to: userInfo.email,
-        subject: `Email unsubscription confirmation for pad ${padId}`,
+        subject: localizedEmail.subject,
       });
     } catch (err) {
       console.error(err);
@@ -309,6 +325,7 @@ const setAuthorEmailRegistered = async (userInfo, authorId, subscribeId, padId) 
     authorId,
     onStart: userInfo.email_onStart,
     onEnd: userInfo.email_onEnd,
+    locale: getUserLocale(userInfo),
     subscribeId,
     timestamp,
   };
@@ -335,7 +352,12 @@ const unsetAuthorEmailRegistered = async (userInfo, authorId, unsubscribeId, pad
   if (!value.pending) value.pending = {};
 
   // add the registered values to the pending section of the object
-  value.pending[userInfo.email] = {authorId, unsubscribeId, timestamp};
+  value.pending[userInfo.email] = {
+    authorId,
+    locale: getUserLocale(userInfo),
+    timestamp,
+    unsubscribeId,
+  };
 
   // Write the modified datas back in the Db
   await db.set(`emailSubscription:${padId}`, value);

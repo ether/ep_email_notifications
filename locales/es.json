@@ -16,4 +16,13 @@
 , "ep_email_notifications.formOptionOnEnd": "termine de editar este documento"
 , "ep_email_notifications.formBtnSubscr": "Suscribirse"
 , "ep_email_notifications.formBtnUnsubscr": "Desuscribirse"
+, "ep_email_notifications.emailFooter": "Puedes darte de baja de estos correos desde la ventana de configuración del pad."
+, "ep_email_notifications.emailNotificationStartSubject": "Alguien empezó a editar {padId}"
+, "ep_email_notifications.emailNotificationStartBody": "Este pad se está editando ahora:\n  <{padUrl}>\n{footer}"
+, "ep_email_notifications.emailNotificationEndSubject": "Alguien terminó de editar {padId}"
+, "ep_email_notifications.emailNotificationEndBody": "La edición de este pad ha finalizado:\n  <{padUrl}>\n{footer}"
+, "ep_email_notifications.emailSubscriptionConfirmationSubject": "Confirmación de suscripción por correo para el pad {padId}"
+, "ep_email_notifications.emailSubscriptionConfirmationBody": "Haz clic en este enlace para validar tu suscripción al pad {padId}\n{actionUrl}"
+, "ep_email_notifications.emailUnsubscriptionConfirmationSubject": "Confirmación de desuscripción por correo para el pad {padId}"
+, "ep_email_notifications.emailUnsubscriptionConfirmationBody": "Haz clic en este enlace para validar tu desuscripción del pad {padId}\n{actionUrl}"
 }
